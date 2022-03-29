@@ -1,0 +1,23 @@
+Using docfx:
+
+docfx init (если еще нет проекта с docfx, то нужно проинициализировать пустой проект): 
+cd $PROJECT_FOLDER/docfx
+mono $PATH_DOCFX/docfx.exe init
+
+docfx rebuild documentation (после того, как был обновлен код проекта, необходимо запустить docfx чтобы он пересобрал проект документации):
+cd $PATH_DOCFX_PROJECT
+mono $PATH_DOCFX/docfx.exe
+
+docfx run site (из собранной документации запускаем сайт с самой документацией - web server):
+mono $PATH_DOCFX/docfx.exe serve _site
+
+или можем просто открыть _site/index.html
+
+---
+После обновления кода, всегда запускать 
+cd $PATH_DOCFX_PROJECT
+mono $PATH_DOCFX/docfx.exe
+
+Чтобы обновилась документация по написанному коду
+
+docfx подтягивает стандартные комментарии с тремя слешами "///"

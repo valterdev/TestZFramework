@@ -1,0 +1,33 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/App/Modules/System/ModulesSystem/view/main_style.uss?fileID=7433441132597879392&amp;guid=b61e47e7289e44c4094d5af8265bd61e&amp;type=3#main_style" />
+    <ui:Label text="Label" display-tooltip-when-elided="true" name="ProjectTitle" style="-unity-text-align: middle-center; font-size: 16px;" />
+    <ui:VisualElement name="control_btns" class="control_btns" style="height: 40px; align-items: center; margin-right: 10px; justify-content: space-between;">
+        <ui:VisualElement>
+            <ui:Button text="Activate / Deactivate" display-tooltip-when-elided="true" enable-rich-text="false" name="btn_activ" class="btn" style="width: 140px;" />
+        </ui:VisualElement>
+        <ui:VisualElement style="flex-direction: row;">
+            <ui:Button text="Export Project" display-tooltip-when-elided="true" class="btn" style="width: 120px;" />
+            <ui:Button text="Export Modules" display-tooltip-when-elided="true" class="btn" style="width: 120px;" />
+            <ui:VisualElement style="width: 30px;" />
+            <ui:Button text="Import Project" display-tooltip-when-elided="true" class="btn" style="width: 120px;" />
+            <ui:Button text="Import Modules" display-tooltip-when-elided="true" class="btn" style="width: 120px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement style="height: 30px; flex-direction: row; justify-content: space-between; margin-left: 10px; border-left-color: rgb(255, 255, 255); border-right-color: rgb(255, 255, 255); border-top-color: rgb(255, 255, 255); border-bottom-color: rgb(255, 255, 255); border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; align-items: center; margin-right: 10px;">
+        <ui:VisualElement name="module_name">
+            <ui:Label text="Module" display-tooltip-when-elided="true" style="-unity-font-style: bold; font-size: 18px;" />
+        </ui:VisualElement>
+        <ui:VisualElement style="flex-direction: row; width: 200px; justify-content: flex-end; flex-basis: 220px;">
+            <ui:VisualElement style="flex-basis: auto; width: 70px; align-items: center;">
+                <ui:Label text="Version" display-tooltip-when-elided="true" style="-unity-font-style: bold; font-size: 14px;" />
+            </ui:VisualElement>
+            <ui:VisualElement style="align-items: center; width: 70px; flex-basis: auto;">
+                <ui:Label text="Type" display-tooltip-when-elided="true" style="-unity-font-style: bold; font-size: 14px;" />
+            </ui:VisualElement>
+            <ui:VisualElement style="width: 80px; align-items: center; flex-basis: auto;">
+                <ui:Label text="State" display-tooltip-when-elided="true" style="-unity-font-style: bold; font-size: 14px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:ListView focusable="true" name="modules_list" fixed-item-height="30" virtualization-method="DynamicHeight" style="flex-grow: 1; margin-bottom: 10px; margin-top: 10px;" />
+</ui:UXML>

@@ -1,0 +1,16 @@
+{
+    "hash": "5c436f933d644d25b71a94cd067a1ed9",
+    "name": "GlobalStateStore",
+    "version": "0.5",
+    "author": "Andrei Abdusamatov",
+    "site": "",
+    "email": "",
+    "type": 0,
+    "state": 0,
+    "description": "Глобальное хранилище состояния с функцией реактивности.",
+    "preinit": false,
+    "critical": true,
+    "dependencies": [],
+    "utils": [],
+    "plugins": []
+}

@@ -1,0 +1,83 @@
+# Unity Generated
+[Tt]emp/
+/[Ll]ibrary/
+[Oo]bj/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+
+# Unity3D Generated File On Crash Reports
+sysinfo.txt
+
+# --- my generate
+# for builds
+/ios/
+/android/
+/macos/
+/windows/
+# for gameroom builds
+/fb_web_(gameroom)/
+/fb_win(gameroom)/
+# sources
+/source/
+/empty-project/
+module_disabled*
+# --- 
+
+# OS Generated
+desktop.ini
+desktop.ini.meta
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Visual Studio cache directory
+.vs/
+
+.vscode/
+
+# Visual Studio / MonoDevelop Generated
+ExportedObj/
+obj/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.idea
+.vsconfig
+
+*.pdb
+*.opendb
+*.VC.db
+*.orig
+
+*.pidb.meta
+*.pdb.meta
+
+#old hg control
+.hg/
+.hgcheck/
+.hgignore
+
+#DocFX documentation
+/docfx_project/_site/
+/docfx_project/api/
+/docfx_project/obj/
+
+#Generates on ssd
+*._*
+
+#FMOD
+/[Aa]ssets/Plugins/FMOD/Cache/*
+/[Aa]ssets/StreamingAssets/**/*.bank
+/[Aa]ssets/StreamingAssets/**/*.bank.meta
+fmod_editor.log

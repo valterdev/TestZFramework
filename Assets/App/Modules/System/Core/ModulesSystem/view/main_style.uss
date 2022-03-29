@@ -1,0 +1,28 @@
+.control_btns {
+    height: 48px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.btn {
+    flex-shrink: 0;
+    flex-direction: column;
+    width: 100px;
+}
+
+.btn {
+    flex-shrink: 0;
+    flex-direction: row;
+    width: 100px;
+}
+
+.module_descr {
+    white-space: normal;
+    margin: 0 10px 10px 10px;
+    border-width: 1px;
+}
+
+.disable_module {
+    color: #ff0000;
+}

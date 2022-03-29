@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="bg_border" style="background-image: url(&apos;project://database/Assets/App/Content/UI/Textures/Compressed/CardDeck/border_skill_legendary.png?fileID=2800000&amp;guid=41760ff8d019e4669a0816b5e1661c43&amp;type=3#border_skill_legendary&apos;); width: 300px; height: 411px; rotate: 0;">
+        <ui:VisualElement name="skill_image" style="background-image: url(&apos;project://database/Assets/App/Content/UI/Textures/Compressed/CardSkillsImages/card_skill_022.png?fileID=2800000&amp;guid=b7dec413bcd494f7583784aefb139492&amp;type=3#card_skill_022&apos;); -unity-background-scale-mode: stretch-to-fill; width: 258px; height: 168px; flex-basis: auto; left: 21px; top: 20px;" />
+        <ui:VisualElement name="rarity_band" style="background-image: url(&apos;project://database/Assets/App/Content/UI/Textures/Compressed/CardDeck/bg_title_skill_legendary.png?fileID=2800000&amp;guid=b562dda220d4445c786b720c81525c19&amp;type=3#bg_title_skill_legendary&apos;); height: 62px; width: 262px; top: 5px; left: 19px;" />
+        <ui:VisualElement name="ui_overlay" style="position: absolute; left: 20px; top: 20px; right: 20px; bottom: 20px;">
+            <ui:VisualElement style="border-left-width: 6px; border-right-width: 6px; border-top-width: 6px; border-bottom-width: 6px; width: 80px; height: 40px; background-color: rgba(63, 62, 62, 0.57); border-left-color: rgb(0, 0, 0); border-right-color: rgb(0, 0, 0); border-top-color: rgb(0, 0, 0); border-bottom-color: rgb(0, 0, 0); flex-direction: row; align-items: center;">
+                <ui:VisualElement style="width: 24px; height: 22px; background-image: url(&apos;project://database/Assets/App/Content/UI/Textures/Compressed/CardDeck/mgem_skill_rare.png?fileID=2800000&amp;guid=7116dcd672642455e80f7694e25f34e0&amp;type=3#mgem_skill_rare&apos;);" />
+                <ui:Label text="6" display-tooltip-when-elided="true" name="mana" style="-unity-font-style: bold; font-size: 30px; -unity-text-align: middle-center; width: 40px;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="empty" style="height: 128px;" />
+            <ui:Label text="Супер скилл" display-tooltip-when-elided="true" name="title" style="top: auto; height: 30px; -unity-text-align: middle-center; -unity-font-style: bold; font-size: 14px;" />
+            <ui:Label text="Описание скила" display-tooltip-when-elided="true" name="descr" style="margin-top: 10px; margin-left: 10px; margin-right: 10px; margin-bottom: 10px; -unity-text-align: middle-center; flex-basis: 150px; height: 200px; align-items: flex-start;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,28 @@
+{
+    "hash": "375893e4a07b7d2488abcad1fa340a1f",
+    "name": "ModulesSystem",
+    "version": "0.5",
+    "author": "Abdusamatov Andrey Aleksandrovich",
+    "site": "",
+    "email": "",
+    "type": 0,
+    "state": 0,
+    "description": "Позволяет создавать новые и управлять имеющимися модулями фреймворка ZFramework",
+    "preinit": false,
+    "critical": true,
+    "dependencies": [],
+    "utils": [
+        "Encode",
+        "SingletonCrossScene"
+    ],
+    "plugins": [
+        {
+            "name": "io.github.icsharpcode.sharpziplib",
+            "version": "1.2.0",
+            "type": 2,
+            "registry_name": "package.openupm.com",
+            "registry_url": "https://package.openupm.com",
+            "registry_scopes": [ "io.github.icsharpcode.sharpziplib" ]
+        }
+    ]
+}

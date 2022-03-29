@@ -1,0 +1,17 @@
+{
+    "hash": "9567184333de0750da255843b1db247c",
+    "name": "Hooks",
+    "version": "0.5",
+    "author": "",
+    "site": "",
+    "email": "",
+    "type": 0,
+    "state": 0,
+    "description": "Система хуков через всю систему.",
+    "preinit": false,
+    "critical": true,
+    "content_folders": [],
+    "dependencies": [],
+    "utils": [ "Promise", "SingletonCrossScene" ],
+    "plugins": []
+}

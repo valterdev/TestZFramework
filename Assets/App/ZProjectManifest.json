@@ -1,0 +1,12 @@
+{
+
+    "hash": "84e2b614a665dc7a7e44b0c7976e6f66",
+    "name": "TestProject",
+    "plugins": [
+        {
+            "com.unity.nuget.newtonsoft-json": "2.0.2",
+            "com.unity.addressables": "1.19.19"
+        }
+    ],
+    "not_active_modules": []
+}

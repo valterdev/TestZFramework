@@ -1,0 +1,26 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace ZFramework
+{
+    public class {0}Manager : SingletonCrossScene<{0}Manager>
+    {
+        /// <summary>
+        /// Функция предварительной инициализации
+        /// </summary>
+        public void PreInit()
+        {
+            RegisterStaticObject();
+        }
+
+        /// <summary>
+        /// Регистрирует (создает и инициализирует) глобальную статик переменную, чтобы у нас был доступ к стору из любого участка кода.
+        /// Реализуется паттерн синглтона (потокобезопасный).
+        /// </summary>
+        public void RegisterStaticObject()
+        {
+            App.{0}Manager = {0}Manager.Instance();
+        }
+    }
+}

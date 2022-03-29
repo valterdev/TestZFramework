@@ -1,0 +1,23 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace ZFramework
+{
+    public static partial class GSHelp // {0}Store
+    {
+        // For autocomplete use this: GSHelp.
+        // Using:
+        // App.GStore.Get<int>("{0}TestUniqGlobalVariable");
+        // App.GStore.Get<bool>("{0}/{0}TestGlobalBoolVariable");
+        // App.GStore.Set<bool>("{0}/{0}TestGlobalBoolVariable", true);
+
+        public static int {0}TestUniqGlobalVariable;
+
+        public class {0}
+        {
+            public static string {0}TestGlobalStringVariable;
+            public static bool {0}TestGlobalBoolVariable;
+        }
+    }
+}

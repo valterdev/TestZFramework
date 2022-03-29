@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: UIPages
+  m_EditorClassIdentifier: 
+  m_GroupName: UIPages
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 59099db8275f841cc9cb4dafbddaafd1
+  m_SerializeEntries:
+  - m_GUID: e8fc14c1d5ecd475aaaddf18ca860b01
+    m_Address: Assets/App/Content/UI/Views/index.uxml
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ui_pages
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 83148f883f4294171b8215b6222ae56e, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 23d8bbe4e6ac548379d90cb263fb0875, type: 2}
+    - {fileID: 11400000, guid: 902ac62670fa049e7986ed4b64e0151b, type: 2}

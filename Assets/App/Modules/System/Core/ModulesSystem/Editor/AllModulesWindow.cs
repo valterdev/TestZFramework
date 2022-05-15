@@ -425,36 +425,44 @@ namespace ZFramework.Editor
         [MenuItem("Window/ZFramework/Module Editor/Update PreInit script")]
         public static void UpdatePreInit()
         {
-            if(_findedModules.Count > 0)
+            if (_findedModules.Count == 0)
             {
-                StringBuilder allInits = new StringBuilder();
-
-                foreach (ModuleInfo module in _findedModules)
+                if(_projectInfo == null)
                 {
-                    if (module.preinit && module.active)
-                    {
-                        allInits.Append("\t\t\t");
-                        if (string.IsNullOrEmpty(module.custom_manager_name))
-                        {
-                            allInits.Append(module.name);
-                            allInits.Append("Manager");
-                        } else
-                        {
-                            allInits.Append(module.custom_manager_name);
-                        }
-
-                        allInits.Append(".Instance().PreInit();\n");
-                    }
+                    LoadProjectManifest();
                 }
 
-                string filePath = "App/Modules/System/00_InitializationCycle/Z0_PreInit.cs";
-
-                string tmpl = File.ReadAllText(Path.Combine(Application.dataPath, "App/Modules/System/Core/ModulesSystem/templates/PreInit.cs.tmpl"));
-                tmpl = tmpl.Replace("{0}", allInits.ToString());
-                File.WriteAllText(Path.Combine(Application.dataPath, filePath), tmpl);
-
-                AssetDatabase.Refresh();
+                DirectoryInfo root = new DirectoryInfo(Path.Combine(Application.dataPath, "App/"));
+                FindAllModules(root);
             }
+
+            StringBuilder allInits = new StringBuilder();
+
+            foreach (ModuleInfo module in _findedModules)
+            {
+                if (module.preinit && module.active)
+                {
+                    allInits.Append("\t\t\t");
+                    if (string.IsNullOrEmpty(module.custom_manager_name))
+                    {
+                        allInits.Append(module.name);
+                        allInits.Append("Manager");
+                    } else
+                    {
+                        allInits.Append(module.custom_manager_name);
+                    }
+
+                    allInits.Append(".Instance().PreInit();\n");
+                }
+            }
+
+            string filePath = "App/Modules/System/00_InitializationCycle/Z0_PreInit.cs";
+
+            string tmpl = File.ReadAllText(Path.Combine(Application.dataPath, "App/Modules/System/Core/ModulesSystem/templates/PreInit.cs.tmpl"));
+            tmpl = tmpl.Replace("{0}", allInits.ToString());
+            File.WriteAllText(Path.Combine(Application.dataPath, filePath), tmpl);
+
+            AssetDatabase.Refresh();
         }
 
         //private void ExportPackage()

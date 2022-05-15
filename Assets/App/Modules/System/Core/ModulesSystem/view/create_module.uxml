@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Label text="Settings" display-tooltip-when-elided="true" />
+    <ui:TextField picking-mode="Ignore" label="Module name:" name="module_name" />
+    <ui:TextField picking-mode="Ignore" label="Module version:" value="0.1" text="0.1" name="module_version" />
+    <ui:DropdownField label="Type:" index="-1" name="module_type" />
+    <ui:DropdownField label="State:" index="-1" name="module_state" />
+    <ui:TextField picking-mode="Ignore" label="Module author" name="module_author" />
+    <ui:TextField picking-mode="Ignore" label="Support site:" name="module_site" />
+    <ui:TextField picking-mode="Ignore" label="Support email:" name="module_email" />
+    <ui:TextField picking-mode="Ignore" text="Description" multiline="true" name="module_descr" style="height: 128px; width: 643px;" />
+    <ui:VisualElement style="flex-direction: row; justify-content: space-around;">
+        <ui:Toggle label=" Singleton Manager" name="module_singleton" style="flex-direction: row-reverse;" />
+        <ui:Toggle label=" Pre Init" name="module_preinit" style="flex-direction: row-reverse;" />
+    </ui:VisualElement>
+    <ui:TextField picking-mode="Ignore" label="Manager&apos;s script name:" name="module_script_mname" />
+    <ui:VisualElement style="flex-direction: row; justify-content: space-around;">
+        <ui:Toggle label=" Hooks" name="module_hooks" style="flex-direction: row-reverse;" />
+        <ui:Toggle label=" Store" name="module_store" style="flex-direction: row-reverse;" />
+    </ui:VisualElement>
+    <ui:Button text="Create module" display-tooltip-when-elided="true" name="btn_create_module" />
+</ui:UXML>

@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:DropdownField label="Module:" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="selected_module" />
+    <ui:Label text="Selected Files:" display-tooltip-when-elided="true" />
+    <ui:ListView focusable="true" style="flex-grow: 1; padding-bottom: 0; max-height: 4000px;" />
+    <ui:VisualElement style="align-items: center; height: 26px; justify-content: center; min-height: 26px; max-height: 26px;">
+        <ui:Button text="Add Files" display-tooltip-when-elided="true" name="btn_add_files" style="width: 300px; align-items: stretch; flex-shrink: 0;" />
+    </ui:VisualElement>
+</ui:UXML>

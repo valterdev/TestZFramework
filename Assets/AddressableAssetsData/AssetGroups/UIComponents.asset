@@ -16,12 +16,7 @@ MonoBehaviour:
   m_Data:
     m_SerializedData: []
   m_GUID: 8b5cf649789754908ba12cb6a410b507
-  m_SerializeEntries:
-  - m_GUID: 1137e252c948d4b6b9fb1f9089d58fbf
-    m_Address: Assets/App/Content/UI/Views/Components/CardManager/CardView.uxml
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - ui_components
+  m_SerializeEntries: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 83148f883f4294171b8215b6222ae56e, type: 2}
   m_SchemaSet:

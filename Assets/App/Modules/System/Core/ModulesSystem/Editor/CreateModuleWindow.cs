@@ -184,12 +184,13 @@ namespace ZFramework.Editor
             string moduleFolder = _moduleType.value;
             string filePath = "App/Modules/" + moduleFolder + "/" + _moduleInfo.name;
 
-            
-            
+            var managerName = _moduleInfo.custom_manager_name == string.Empty ? _moduleInfo.name + "Manager" : _moduleInfo.custom_manager_name;
+
+
             string[] fileNames = {
         "module-info.json",
         _moduleInfo.name + "Parts.cs",
-        _moduleInfo.custom_manager_name == string.Empty ? _moduleInfo.name + "Manager.cs" : _moduleInfo.custom_manager_name + ".cs",
+        managerName + ".cs",
         _moduleInfo.name + "Hooks.cs",
         _moduleInfo.name + "Store.cs",
         };
@@ -206,12 +207,12 @@ namespace ZFramework.Editor
                 {
                     // Parts
                     string partTmpl = File.ReadAllText(Path.Combine(Application.dataPath, "App/Modules/System/Core/ModulesSystem/templates/Parts.cs.tmpl"));
-                    partTmpl = partTmpl.Replace("{0}", _moduleInfo.name);
+                    partTmpl = partTmpl.Replace("{0}", managerName);
                     File.WriteAllText(Path.Combine(Application.dataPath, filePath, fileNames[1]), partTmpl);
 
                     // Manager
                     string managerTmpl = File.ReadAllText(Path.Combine(Application.dataPath, "App/Modules/System/Core/ModulesSystem/templates/Manager.cs.tmpl"));
-                    managerTmpl = managerTmpl.Replace("{0}", _moduleInfo.custom_manager_name == string.Empty ? _moduleInfo.name : _moduleInfo.custom_manager_name);
+                    managerTmpl = managerTmpl.Replace("{0}", managerName);
                     File.WriteAllText(Path.Combine(Application.dataPath, filePath, fileNames[2]), managerTmpl);
 
                 }

@@ -10,8 +10,6 @@
   href: global_defines.md
 - name: Глобальные настройки ZFramework
   href: global_options.md
-- name: Взаимодействие с Google API
-  href: google_api.md
 - name: CI/CD
   href: ci_cd.md
 - name: Недостатки / Недоработки ZFramework

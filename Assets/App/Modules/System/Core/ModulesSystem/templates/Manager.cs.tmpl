@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace ZFramework
 {
-    public class {0}Manager : SingletonCrossScene<{0}Manager>
+    public class {0} : SingletonCrossScene<{0}>
     {
         /// <summary>
         /// Функция предварительной инициализации
@@ -20,7 +20,7 @@ namespace ZFramework
         /// </summary>
         public void RegisterStaticObject()
         {
-            App.{0}Manager = {0}Manager.Instance();
+            App.{0} = {0}.Instance();
         }
     }
 }

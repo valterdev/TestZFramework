@@ -6,9 +6,7 @@ namespace ZFramework
     {
         public void PreInit()
         {
-			CardManager.Instance().PreInit();
-			UIRoutingManager.Instance().PreInit();
-			UIToolkitManager.Instance().PreInit();
+			UI.Instance().PreInit();
 
         }
     }

@@ -58,7 +58,6 @@ namespace ZFramework
         {
             DontDestroyOnLoad(this);
             Do(new PreInitTask()).Catch(OnErrorPre);
-            //PreInit();
         }
 
         public IEnumerator Start()
@@ -68,7 +67,6 @@ namespace ZFramework
                 yield return new WaitForEndOfFrame();
             }
 
-            //Init();
             Do(new InitTask()).Catch(OnError);
 
             StartCoroutine(ttt());

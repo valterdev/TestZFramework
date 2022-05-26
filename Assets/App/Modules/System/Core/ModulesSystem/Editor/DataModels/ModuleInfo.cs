@@ -56,6 +56,11 @@ namespace ZFramework.Editor
         /// </summary>
         public List<string> plugins;
 
+        /// <summary>
+        /// используемые в модуле файлы лежащие в папке контент, а не в папке с модулем
+        /// </summary>
+        public List<string> content_files;
+
         [NonSerialized]
         /// <summary>
         /// скрытое свойство, определяющее какие модули активны, а какие нет. Активные лежат в папке Assets, а не активные в папке ZFramework/DisabledModules/ в корневой папке проекта.
@@ -64,7 +69,39 @@ namespace ZFramework.Editor
 
         public string GetModulePath()
         {
-            return "App/Modules/" + (type == 0 ? "System" : "Domain") + "/" + name;
+            return "App/Modules/" + GetModuleCategoryByType(type) + "/" + name;
+        }
+
+        public static string GetModuleCategoryByType(int _value)
+        {
+            switch (_value)
+            {
+            case 0:
+                return "System/Core";
+
+            case 1:
+                return "System/Data";
+
+            case 2:
+                return "System/Network";
+
+            case 3:
+                return "System/Other";
+
+            case 10:
+                return "Domain/Mechanics_Features";
+
+            case 11:
+                return "Domain/Meta";
+
+            case 12:
+                return "Domain/UI";
+
+            case 13:
+                return "Domain/Other";
+
+            default: return string.Empty;
+            }
         }
     }
 }

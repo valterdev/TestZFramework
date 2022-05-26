@@ -20,6 +20,8 @@ namespace ZFramework.Editor
     {
         private static ProjectInfo _projectInfo;
         private static List<ModuleInfo> _findedModules = new List<ModuleInfo>();
+        private static List<string> _filesToDelete = new List<string>();
+
         private VisualElement _mainPage;
         private VisualElement _modulePage;
 
@@ -57,7 +59,7 @@ namespace ZFramework.Editor
 
             _mainPage.Q<Label>("ProjectTitle").text = _projectInfo.name;
             rootVisualElement.Add(_mainPage);
-            populateListView();
+            PopulateListView();
 
             //rootVisualElement.Query<Toggle>().Class("module_check").ForEach((elem) => {
             //    Debug.Log(elem);
@@ -75,6 +77,8 @@ namespace ZFramework.Editor
             //});
 
             _mainPage.Q<Button>("btn_activ").clickable.clicked += ActivateDeactivateMode;
+            _mainPage.Q<Button>("btn_import_project").clickable.clicked += CloseModuleDetails;
+            _mainPage.Q<Button>("btn_import_module").clickable.clicked += ImportModule;
 
             var visualTreeModuleDetails = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Path.Combine("Assets/App/Modules/System/Core/ModulesSystem/view/module_details.uxml"));
             _modulePage = visualTreeModuleDetails.Instantiate();
@@ -84,7 +88,7 @@ namespace ZFramework.Editor
             _modulePage.style.display = DisplayStyle.None;
         }
 
-        void populateListView()
+        private void PopulateListView()
         {
             var listItem = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/App/Modules/System/Core/ModulesSystem/view/module_item.uxml");
 
@@ -157,6 +161,12 @@ namespace ZFramework.Editor
             
         }
 
+        private void ImportModule()
+        {
+            var path = EditorUtility.OpenFilePanel("Select module's packages", "", "unitypackage");
+            AssetDatabase.ImportPackage(path, true);
+        }
+
         private void ActivateDeactivateCallback(ClickEvent evt)
         {
             var elem = (VisualElement)evt.target;
@@ -173,14 +183,16 @@ namespace ZFramework.Editor
         {
             _findedModules[curModuleID].active = value;
             rootVisualElement.Q<ListView>().RefreshItems();//.Rebuild();
-            var zipFileName = _findedModules[curModuleID].name + "_" + _findedModules[curModuleID].hash + ".zip";
+            //var zipFileName = _findedModules[curModuleID].name + "_" + _findedModules[curModuleID].hash + ".zip";
+            var packageName = _findedModules[curModuleID].name + "_" + _findedModules[curModuleID].hash + ".unitypackage";
 
             if (value == true)
             {
-                ExtractZipContent(
-                    Path.Combine(Application.dataPath, "../ZFramework/DisabledModules/", zipFileName),
-                    Path.Combine(Application.dataPath, _findedModules[curModuleID].GetModulePath())
-                    );
+                AssetDatabase.ImportPackage(Path.Combine(Application.dataPath, "../ZFramework/DisabledModules/", packageName), false);
+                //ExtractZipContent(
+                //    Path.Combine(Application.dataPath, "../ZFramework/DisabledModules/", zipFileName),
+                //    Path.Combine(Application.dataPath, _findedModules[curModuleID].GetModulePath())
+                //    );
 
                 // обновляем информацию о выключенных модулях
                 for (int i = 0; i < _projectInfo.not_active_modules.Count; i++)
@@ -191,7 +203,7 @@ namespace ZFramework.Editor
                             Path.Combine(
                             Application.dataPath,
                             "App/Modules/",
-                            _projectInfo.not_active_modules[i].type == 0 ? "System" : "Domain",
+                            ModuleInfo.GetModuleCategoryByType(_findedModules[curModuleID].type),
                             _projectInfo.not_active_modules[i].name,
                             "module_disabled"
                             )
@@ -216,7 +228,7 @@ namespace ZFramework.Editor
                 // заносим информацию о деактивированном модуле в манифест
                 var disabledModule = new ModuleDisabledInfo
                 {
-                    archive_name = zipFileName,
+                    archive_name = packageName,
 
                     hash = _findedModules[curModuleID].hash,
                     name = _findedModules[curModuleID].name,
@@ -230,26 +242,33 @@ namespace ZFramework.Editor
 
                 File.WriteAllText(Path.Combine(Application.dataPath, "App/ZProjectManifest.json"), JsonUtility.ToJson(_projectInfo));
 
+                // создаем UnityPackage с модулем вне папки с ассетами проекта, чтобы он не попадал в билд
+                
+                
+                ExportModuleToUnityPackage(curModuleID,
+                    Path.Combine("Assets", _findedModules[curModuleID].GetModulePath()),
+                    Path.Combine(Application.dataPath, "../ZFramework/DisabledModules/", packageName));
+
                 // создаем архив с модулем вне папки с ассетами проекта, чтобы он не попадал в билд
-                CompressDirectory(
-                Path.Combine(Application.dataPath, _findedModules[curModuleID].GetModulePath()),
-                Path.Combine(Application.dataPath, "../ZFramework/DisabledModules/", zipFileName));
+                //CompressDirectory(
+                //Path.Combine(Application.dataPath, _findedModules[curModuleID].GetModulePath()),
+                //Path.Combine(Application.dataPath, "../ZFramework/DisabledModules/", zipFileName));
 
                 // Удаляем все лишнее
-                string[] fileNames = Directory.GetFiles(Path.Combine(Application.dataPath, _findedModules[curModuleID].GetModulePath()));
+                DirectoryInfo root = new DirectoryInfo(Path.Combine(Application.dataPath, _findedModules[curModuleID].GetModulePath()));
+                FindAllFilesRecursively(root);
 
-                foreach (string file in fileNames)
+                _filesToDelete.AddRange(_findedModules[curModuleID].content_files);
+
+                foreach (string file in _filesToDelete)
                 {
-                    if (!file.Contains("module-info.json"))
-                    {
-                        File.Delete(file);
-                    }
+                    File.Delete(file);
                 }
 
                 File.Create(
                     Path.Combine(
                         Application.dataPath, "App/Modules/",
-                        _findedModules[curModuleID].type == 0 ? "System" : "Domain",
+                        ModuleInfo.GetModuleCategoryByType(_findedModules[curModuleID].type),
                         _findedModules[curModuleID].name,
                         "module_disabled"
                         )
@@ -259,6 +278,29 @@ namespace ZFramework.Editor
             UpdatePreInit();
 
             //AssetDatabase.Refresh();
+        }
+
+        static void FindAllFilesRecursively(DirectoryInfo root)
+        {
+            var subDirs = root.GetDirectories();
+
+            foreach (DirectoryInfo dirInfo in subDirs)
+            {
+                FindAllFilesRecursively(dirInfo);
+            }
+
+            var files = root.GetFiles();
+
+            foreach (FileInfo file in files)
+            {
+                var filename = file.FullName.Split("Assets");
+                var path = "Assets" + filename[1];
+
+                if (!path.Contains("module-info.json"))
+                {
+                    _filesToDelete.Add(path);
+                }
+            }
         }
 
         private void OnSelectionChanged(IEnumerable<object> modules)
@@ -484,16 +526,43 @@ namespace ZFramework.Editor
         //    //AssetDatabase.ImportPackage
         //}
 
-        private void CompressDirectory(string DirectoryPath, string OutputFilePath, int CompressionLevel = 9)
+        private static void ExportModuleToUnityPackage(int curModuleID, string directoryPath, string outputFilePath)
+        {
+            if (!Directory.Exists(Path.Combine(Application.dataPath, "../ZFramework")))
+            {
+                Directory.CreateDirectory(Path.Combine(Application.dataPath, "../ZFramework"));
+            }
+
+            if (!Directory.Exists(Path.Combine(Application.dataPath, "../ZFramework/DisabledModules")))
+            {
+                Directory.CreateDirectory(Path.Combine(Application.dataPath, "../ZFramework/DisabledModules"));
+            }
+
+            var exportedPackageAssetList = new List<string>();
+
+            exportedPackageAssetList.Add(directoryPath);
+
+            if (_findedModules[curModuleID].content_files?.Count > 0)
+            {
+                exportedPackageAssetList.AddRange(_findedModules[curModuleID].content_files);
+            }
+            
+            AssetDatabase.ExportPackage(exportedPackageAssetList.ToArray(), outputFilePath,
+                ExportPackageOptions.Recurse | ExportPackageOptions.IncludeDependencies);
+
+            //AssetDatabase.ImportPackage
+        }
+
+        private void CompressDirectory(string directoryPath, string outputFilePath, int compressionLevel = 9)
         {
             try
             {
-                string[] filenames = Directory.GetFiles(DirectoryPath);
+                string[] filenames = Directory.GetFiles(directoryPath);
 
-                using (ZipOutputStream OutputStream = new ZipOutputStream(File.Create(OutputFilePath)))
+                using (ZipOutputStream OutputStream = new ZipOutputStream(File.Create(outputFilePath)))
                 {
                     // 0 - store only to 9 - means best compression
-                    OutputStream.SetLevel(CompressionLevel);
+                    OutputStream.SetLevel(compressionLevel);
 
                     byte[] buffer = new byte[4096];
 

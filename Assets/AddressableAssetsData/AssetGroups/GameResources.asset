@@ -25,10 +25,6 @@ MonoBehaviour:
     m_Address: Assets/App/Content/UI/Views/Components
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: a5fb1a2ce00ca483798621050ecd3881
-    m_Address: Assets/App/Content/DB/CardsBD.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 83148f883f4294171b8215b6222ae56e, type: 2}
   m_SchemaSet:

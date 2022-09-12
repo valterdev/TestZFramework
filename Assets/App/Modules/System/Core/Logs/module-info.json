@@ -1,0 +1,16 @@
+{
+    "hash": "a59e10cd40c469351e8e7e92bd74ff0e",
+    "name": "Logs",
+    "version": "0.9",
+    "author": "Abdusamatov Andrei Aleksandrovich",
+    "site": "",
+    "email": "",
+    "type": 0,
+    "state": 30,
+    "description": "Log system",
+    "preinit": false,
+    "critical": true,
+    "dependencies": [],
+    "utils": [],
+    "plugins": []
+}

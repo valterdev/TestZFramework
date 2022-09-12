@@ -21,13 +21,6 @@ namespace ZFramework
                 catch (Exception e) { App.LogException(this, e); }
             }
 
-            // Fill current user
-            //if (user != null)
-            //    App.Instance.user = user;
-
-            // На всякий случай
-            //App.User.Validate();
-
             var promise = new Promise();
             promise.Fulfill();
             return promise;

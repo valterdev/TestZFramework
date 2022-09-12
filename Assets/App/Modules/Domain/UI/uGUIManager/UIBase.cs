@@ -8,15 +8,58 @@ namespace ZFramework
 {
     public class UIBase : SingletonCrossScene<UI>
     {
+        #region Events
+
         public event Action<UIElement> Change;
 
+        #endregion
+
+        #region Fields
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public fields
+        // ---------------------------------------------------------------------------------------------------------
+
+        public List<UIPopup> queue; // transferred to public to fix some bugs (it was necessary to find out if BankPopup was called when it was not yet shown in Topmost)
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Protected fields
+        // ---------------------------------------------------------------------------------------------------------
         [SerializeField] protected Transform root;
-        private Dictionary<Type, UIElement> elements;
-        public List<UIPopup> queue; // переведен в public для фикса некоторый багов (нужно было узнать вызван ли BankPopup, когда он еще не показывался в Topmost)
         protected UIPopup topmost;
 
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields
+        // ---------------------------------------------------------------------------------------------------------
+
+        private Dictionary<Type, UIElement> elements;
         private List<Relation> relations;
         private bool relationsIsDirty;
+
+        #endregion
+
+        #region Properties
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public properties
+        // ---------------------------------------------------------------------------------------------------------
+
+        public Transform Root
+        {
+            get
+            {
+                if (root == null)
+                {
+                    root = GameObject.Find("/App/UI").transform;
+                }
+
+                return root;
+            }
+        }
+
+        #endregion
+
+        #region Object lifecycle
 
         public UIBase()
         {
@@ -36,22 +79,19 @@ namespace ZFramework
             }
         }
 
-        public Transform Root
-        {
-            get {
-                if(root == null)
-                {
-                    root = GameObject.Find("/App/UI").transform;
-                }
+        #endregion
 
-                return root;
-            }
-        }
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods
+        // ---------------------------------------------------------------------------------------------------------
 
         public bool Has<T>() where T : UIElement
         {
             return elements.ContainsKey(typeof(T));
         }
+
 
         public T Get<T>() where T : UIElement
         {
@@ -79,10 +119,12 @@ namespace ZFramework
             return (T)elements[key];
         }
 
+
         public UIPopup GetTopmostPopup()
         {
             return topmost;
         }
+
 
         public void ResetAll(object token)
         {
@@ -92,6 +134,10 @@ namespace ZFramework
 
             relationsIsDirty = true;
         }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Internal Methods
+        // ---------------------------------------------------------------------------------------------------------
 
         internal void Require(UIPanel panel, object token, int priority, bool immediately)
         {
@@ -121,6 +167,7 @@ namespace ZFramework
             if (immediately) LateUpdate();
         }
 
+
         internal void Enqueue(UIPopup popup, bool enqueue)
         {
             if (queue.IndexOf(popup) == -1)
@@ -132,17 +179,44 @@ namespace ZFramework
             }
         }
 
+
         internal void Dequeue(UIPopup popup)
         {
             popup.IsShow = false;
         }
 
+
         internal bool IsAwait(UIPopup popup)
         {
-            return queue.IndexOf(popup) != -1   // Попап в очереди
-                || popup.IsShow == true         // или сейчас отображается
-                || popup.IsTransit == true;     // или сейчас проигрывается анимация закрытия
+            return queue.IndexOf(popup) != -1   // Popup in queue
+                || popup.IsShow == true         // or showing now
+                || popup.IsTransit == true;     // or playing closed's animation
         }
+
+
+        internal void OnChangeState(UIElement element)
+        {
+            if (element is UIPopup)
+            {
+                var popup = (UIPopup)element;
+                if (popup.IsShow == false && popup.IsTransit == false)
+                    queue.Remove(popup);
+
+                topmost = queue.Count > 0 ? queue?[0] : null;
+
+                if (topmost != null)
+                {
+                    topmost.Shade(false);
+                }
+            }
+
+            if (Change != null)
+                Change(element);
+        }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private Methods
+        // ---------------------------------------------------------------------------------------------------------
 
         private IEnumerator ProcessPopup()
         {
@@ -167,25 +241,6 @@ namespace ZFramework
             }
         }
 
-        internal void OnChangeState(UIElement element)
-        {
-            if (element is UIPopup)
-            {
-                var popup = (UIPopup)element;
-                if (popup.IsShow == false && popup.IsTransit == false)
-                    queue.Remove(popup);
-
-                topmost = queue.Count > 0 ? queue?[0] : null;
-
-                if (topmost != null)
-                {
-                    topmost.Shade(false);
-                }
-            }
-
-            if (Change != null)
-                Change(element);
-        }
 
         private IEnumerator PlayRoutineWhile(UIPopup popup, IEnumerator routine, bool value)
         {
@@ -204,6 +259,7 @@ namespace ZFramework
                 }
             }
         }
+
 
         private void LateUpdate()
         {
@@ -232,6 +288,10 @@ namespace ZFramework
             }
         }
 
+        #endregion
+
+        #region Nested Class
+
         private class Relation
         {
             public object token;
@@ -256,67 +316,6 @@ namespace ZFramework
                 return panel == other.panel
                     && Mathf.Abs(priority) > Mathf.Abs(other.priority);
             }
-        }
-
-        #region Base Classes
-
-        [RequireComponent(typeof(RectTransform))]
-        [RequireComponent(typeof(CanvasGroup))]
-        public abstract class UIElement : MonoBehaviour
-        {
-            public bool IsShow { get; internal set; }
-            public bool IsTransit { get; internal set; }
-
-            internal UIBase UIBase { get; set; }
-
-            internal IEnumerator ShowRoutine()
-            {
-                gameObject.SetActive(true);
-                IsShow = true;
-                IsTransit = true;
-                UIBase.OnChangeState(this);
-                yield return Show();
-                IsTransit = false;
-                UIBase.OnChangeState(this);
-            }
-
-            internal IEnumerator HideRoutine()
-            {
-                IsShow = false;
-                IsTransit = true;
-                UIBase.OnChangeState(this);
-                yield return Hide();
-                IsTransit = false;
-                gameObject.SetActive(false);
-                UIBase.OnChangeState(this);
-            }
-
-            protected virtual IEnumerator Show() { yield break; }
-            protected virtual IEnumerator Hide() { yield break; }
-        }
-
-        public abstract class UIPanel : UIElement
-        {
-            // Отобразить (priority > 0) / Cкрыть (priority <= 0)
-            // выполено ввиде приоритетов из-за того что разные элементы могут накладывать разные
-            // требования на отображение/сокрытие панели, и через приоритеты разрешаются конфликты
-            public void Require(object token, int priority, bool immediately = false) { UIBase.Require(this, token, priority, immediately); }
-            public void Open() { Require(this, +1, true); }
-            public void Close() { Require(this, 0, true); }
-        }
-
-        public abstract class UIPopup : UIElement, IEnumerator
-        {
-            public UIPopup Open(bool enqueue = false) { UIBase.Enqueue(this, enqueue); return this; }
-            public UIPopup Close() { UIBase.Dequeue(this); return this; }
-            public bool IsTopmost { get { return this == UIBase.GetTopmostPopup(); } }
-            public abstract void Shade(bool enable);
-
-            #region IEnumerator: for Unity Coroutine
-            void IEnumerator.Reset() { }
-            bool IEnumerator.MoveNext() { return UIBase.IsAwait(this); }
-            object IEnumerator.Current { get { return null; } }
-            #endregion
         }
 
         #endregion

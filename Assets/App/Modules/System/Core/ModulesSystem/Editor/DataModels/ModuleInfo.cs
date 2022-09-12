@@ -1,24 +1,27 @@
 using System;
 using System.Collections.Generic;
+using Constants = EditorConstantsForModuleSystem;
 
 namespace ZFramework.Editor
 {
     /// <summary>
-    /// Класс описывающий мета данные модулей ZFramework
+    /// Class describing the meta data of ZFramework modules
     /// </summary>
     [Serializable]
     public class ModuleInfo
     {
+        #region Fields
+
         /// <summary>
-        /// данные хеш код генерируется автоматически и использует название модуля, но при этом у модулей с одинаковым название он будет генерировать разный хеш код.
-        /// Хеш код задается 1 раз при создании модуля.
+        /// The hash code is generated automatically and uses the name of the module, but modules with the same name will generate a different hash code.
+        /// The hash code is set once when creating a module.
         /// </summary>
         public string hash;
         public string category;
         public string name;
 
         /// <summary>
-        /// Название менеджера модуля, которое будет использовано при генерации файла Z0_PreInit.cs
+        /// The name of the module manager that will be used when generating the Z0_PreInit.cs file
         /// </summary>
         public string custom_manager_name;
 
@@ -28,8 +31,19 @@ namespace ZFramework.Editor
         public string email;
 
         /// <summary>
-        /// Тип модуля. От него зависит в какой папке будет лежать модуль (System или Domain).
-        /// Соотвественно все системный модули имеют тип = 0. А все модули непосредственно для игры тип = 1.
+        /// Module type. It depends on it in which folder the module will be located (System or Domain).
+        ///
+        /// System/Core = 0
+        /// System/Data = 1
+        /// System/Network = 2
+        /// System/Other = 3
+        /// System/Tools = 4
+        ///
+        /// Domain/Mechanics_Features = 10
+        /// Domain/Meta = 11
+        /// Domain/UI = 12
+        /// Domain/Other = 13
+        /// Domain/Tools = 14
         /// </summary>
         public int type;
         public int state;
@@ -37,71 +51,71 @@ namespace ZFramework.Editor
 
         public bool preinit;
         /// <summary>
-        /// Скрытое свойство, которое задаются вручную в json файле. Если оно true, это значит, что без этого модуля система работать не будет (либо будет, но такое не предполагается).
+        /// Hidden property that is set manually in the json file. If it is true, it means that the system will not work without this module (or it will, but this is not expected).
         /// </summary>
         public bool critical;
 
         /// <summary>
-        /// зависимости от других модулей
+        /// Dependencies on other modules
         /// </summary>
         public List<string> dependencies;
 
         /// <summary>
-        /// используемые в модуле независимые скрипты (помещаются в папку Modules/System/Utils)
+        /// Independent scripts used in the module (placed in the Modules/System/Utils folder)
         /// </summary>
         public List<string> utils;
 
         /// <summary>
-        /// используемые в модуле плагины юнити (UPM | .unitypackage | Packages/manifest.json)
+        /// unity plugins used in the module (UPM | .unitypackage | Packages/manifest.json)
         /// </summary>
         public List<string> plugins;
 
         /// <summary>
-        /// используемые в модуле файлы лежащие в папке контент, а не в папке с модулем
+        /// files used in the module are located in the content folder, and not in the folder with the module
         /// </summary>
         public List<string> content_files;
 
         [NonSerialized]
         /// <summary>
-        /// скрытое свойство, определяющее какие модули активны, а какие нет. Активные лежат в папке Assets, а не активные в папке ZFramework/DisabledModules/ в корневой папке проекта.
+        /// Hidden property that determines which modules are active and which are not. The active ones are in the Assets folder, and the non-active ones are in the ZFramework/DisabledModules/ folder in the root folder of the project.
         /// </summary>
         public bool active;
 
+        #endregion
+
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods (static)
+        // ---------------------------------------------------------------------------------------------------------
+
+        public static string GetModuleCategoryByType(int value) =>
+            value switch
+            {
+                0 => Constants.System_Core,
+                1 => Constants.System_Data,
+                2 => Constants.System_Network,
+                3 => Constants.System_Other,
+                4 => Constants.System_Tools,
+
+                10 => Constants.Domain_Mechanics_Features,
+                11 => Constants.Domain_Meta,
+                12 => Constants.Domain_UI,
+                13 => Constants.Domain_Other,
+                14 => Constants.Domain_Tools,
+
+                _ => string.Empty,
+            };
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods
+        // ---------------------------------------------------------------------------------------------------------
+
         public string GetModulePath()
         {
-            return "App/Modules/" + GetModuleCategoryByType(type) + "/" + name;
+            return Constants.PathToAppModules + GetModuleCategoryByType(type) + "/" + name;
         }
 
-        public static string GetModuleCategoryByType(int _value)
-        {
-            switch (_value)
-            {
-            case 0:
-                return "System/Core";
-
-            case 1:
-                return "System/Data";
-
-            case 2:
-                return "System/Network";
-
-            case 3:
-                return "System/Other";
-
-            case 10:
-                return "Domain/Mechanics_Features";
-
-            case 11:
-                return "Domain/Meta";
-
-            case 12:
-                return "Domain/UI";
-
-            case 13:
-                return "Domain/Other";
-
-            default: return string.Empty;
-            }
-        }
+        #endregion
     }
 }

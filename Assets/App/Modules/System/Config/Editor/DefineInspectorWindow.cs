@@ -7,65 +7,62 @@ using UnityEngine;
 namespace ZFramework.Editor
 {
     /// <summary>
-    /// Функционал управления глобальными определениями (Расширение для редактора Unity)
+    /// Global Definitions Management Functionality (Unity Editor Extension)
     /// </summary>
     public class DefineInspectorWindow : EditorWindow
     {
+        // Constants
         private const string _filename = "App/Modules/System/Config/ProjectGlobalDefines.txt";
+
+        #region Fields
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields (static)
+        // ---------------------------------------------------------------------------------------------------------
 
         private static List<DefinePair> _defineSymbols = new List<DefinePair>();
         private static string _pathToFile;
         private static bool _hasReadSymbols;
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields
+        // ---------------------------------------------------------------------------------------------------------
+
         private string _newDefine = "";
 
-        [MenuItem("Window/ZFramework/Global Define Inspector")]
-        public static void ShowWindow()
-        {
-            GetWindow(typeof(DefineInspectorWindow));
-            CheckToReadPairsFromFile();
-        }
+        #endregion
 
-        [UnityEditor.Callbacks.DidReloadScripts]
-        private static void OnScriptsReloaded()
-        {
-            CheckToReadPairsFromFile();
-        }
+        #region Nested Types
 
-        private static void CheckToReadPairsFromFile()
+        public class DefinePair
         {
-            if (!_hasReadSymbols)
-            {
-                _pathToFile = Path.Combine(Application.dataPath, _filename);
-                _defineSymbols = ParseFileToPairs(_pathToFile);
-                SortDefineSymbols();
-                _hasReadSymbols = true;
-            }
-        }
+            public string defineSymbol;
+            public bool on;
 
-        private static List<DefinePair> ParseFileToPairs(string filepath)
-        {
-            if (!File.Exists(filepath))
+            public static DefinePair ParseLine(string line)
             {
-                File.Create(filepath);
-            }
-            string text = File.ReadAllText(filepath);
-            string[] lines = text.Split(';');
-            var pairs = new List<DefinePair>();
-            foreach (string line in lines)
-            {
-                var pair = DefinePair.ParseLine(line);
-                if (pair != null)
+                string[] split = line.Split(',');
+                if (split.Length != 2)
                 {
-                    pairs.Add(pair);
+                    return null;
                 }
+                var pair = new DefinePair
+                {
+                    defineSymbol = split[0],
+                    on = split[1] == "1",
+                };
+                return pair;
             }
-            return pairs;
+
+            public string ToFileString()
+            {
+                return defineSymbol + "," + (on ? "1" : "0");
+            }
         }
 
-        private static void SortDefineSymbols()
-        {
-            _defineSymbols = _defineSymbols.OrderBy(o => o.defineSymbol).ToList();
-        }
+        #endregion
+
+        #region Unity lifecycle & UI
 
         private void OnGUI()
         {
@@ -121,6 +118,71 @@ namespace ZFramework.Editor
             }
         }
 
+        #endregion
+
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods (static)
+        // ---------------------------------------------------------------------------------------------------------
+
+        [MenuItem("Window/ZFramework/Global Define Inspector")]
+        public static void ShowWindow()
+        {
+            GetWindow(typeof(DefineInspectorWindow));
+            CheckToReadPairsFromFile();
+        }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private Methods (static)
+        // ---------------------------------------------------------------------------------------------------------
+
+        [UnityEditor.Callbacks.DidReloadScripts]
+        private static void OnScriptsReloaded()
+        {
+            CheckToReadPairsFromFile();
+        }
+
+
+        private static void CheckToReadPairsFromFile()
+        {
+            if (!_hasReadSymbols)
+            {
+                _pathToFile = Path.Combine(Application.dataPath, _filename);
+                _defineSymbols = ParseFileToPairs(_pathToFile);
+                SortDefineSymbols();
+                _hasReadSymbols = true;
+            }
+        }
+
+
+        private static List<DefinePair> ParseFileToPairs(string filepath)
+        {
+            if (!File.Exists(filepath))
+            {
+                File.Create(filepath);
+            }
+            string text = File.ReadAllText(filepath);
+            string[] lines = text.Split(';');
+            var pairs = new List<DefinePair>();
+            foreach (string line in lines)
+            {
+                var pair = DefinePair.ParseLine(line);
+                if (pair != null)
+                {
+                    pairs.Add(pair);
+                }
+            }
+            return pairs;
+        }
+
+
+        private static void SortDefineSymbols()
+        {
+            _defineSymbols = _defineSymbols.OrderBy(o => o.defineSymbol).ToList();
+        }
+
+
         private static void AddPairToFile(DefinePair pair)
         {
             string pairStr = pair.ToFileString();
@@ -128,11 +190,6 @@ namespace ZFramework.Editor
             File.AppendAllText(_pathToFile, appendStr);
         }
 
-        private void UpdatePairInFile(DefinePair pair)
-        {
-            DeletePairFromFile(pair);
-            AddPairToFile(pair);
-        }
 
         private static void DeletePairFromFile(DefinePair pair)
         {
@@ -150,12 +207,24 @@ namespace ZFramework.Editor
             File.WriteAllText(_pathToFile, text);
         }
 
+        // ---------------------------------------------------------------------------------------------------------
+        // Private Methods
+        // ---------------------------------------------------------------------------------------------------------
+
+        private void UpdatePairInFile(DefinePair pair)
+        {
+            DeletePairFromFile(pair);
+            AddPairToFile(pair);
+        }
+
+
         private void SetScriptDefines()
         {
             var targetBuildGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
             string defines = CreateDefinesString();
             PlayerSettings.SetScriptingDefineSymbolsForGroup(targetBuildGroup, defines);
         }
+
 
         private string CreateDefinesString()
         {
@@ -168,30 +237,6 @@ namespace ZFramework.Editor
             return str;
         }
 
-        public class DefinePair
-        {
-            public string defineSymbol;
-            public bool on;
-
-            public static DefinePair ParseLine(string line)
-            {
-                string[] split = line.Split(',');
-                if (split.Length != 2)
-                {
-                    return null;
-                }
-                var pair = new DefinePair
-                {
-                    defineSymbol = split[0],
-                    on = split[1] == "1",
-                };
-                return pair;
-            }
-
-            public string ToFileString()
-            {
-                return defineSymbol + "," + (on ? "1" : "0");
-            }
-        }
+        #endregion
     }
 }

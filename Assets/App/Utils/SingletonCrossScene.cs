@@ -3,13 +3,28 @@
 namespace ZFramework
 {
     /// <summary>
-    /// Шаблон синглтона, который живет в течении работы приложения, если объекта нет на сцене - создаст себя.
+    /// A singleton template that lives for the duration of the application, if the object is not on the stage, it will create itself.
     /// </summary>
     public class SingletonCrossScene<T> : MonoBehaviour where T : MonoBehaviour
     {
+        // TODO: R&D Singleton pattern using scriptable objects (to protect against domain reloading after scripts compiling)
+        #region Fields
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields (static)
+        // ---------------------------------------------------------------------------------------------------------
+
         private static T _instance;
         private static bool _applicationIsQuitting = false;
-        private static object _lock = new object();
+        private static object _lock = new();
+
+        #endregion
+
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods (static)
+        // ---------------------------------------------------------------------------------------------------------
 
         public static T Instance()
         {
@@ -48,14 +63,19 @@ namespace ZFramework
             }
         }
 
+        #endregion
+
+        #region Object lifecycle
+
         /// <summary>
-        /// При закрытии приложения объекты уничтожаются в случайной последовательности.
-        /// Для защиты от создания нового объекта после уничтожения используется установка этого флага.
+        /// When the application closes, the objects are destroyed in a random order.
+        /// To prevent the creation of a new object after destruction, setting this flag is used.
         /// </summary>
-        public void OnDestroy()
+        public virtual void OnDestroy()
         {
             _applicationIsQuitting = true;
         }
 
+        #endregion
     }
 }

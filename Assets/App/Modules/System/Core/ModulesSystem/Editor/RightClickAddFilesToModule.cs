@@ -6,32 +6,47 @@ using UnityEngine.UIElements;
 using System;
 using System.IO;
 using System.Linq;
+using Constants = EditorConstantsForModuleSystem;
 
 namespace ZFramework.Editor
 {
     public class RightClickAddFilesToModule : EditorWindow
     {
+        #region Fields
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields (static)
+        // ---------------------------------------------------------------------------------------------------------
+
         private static ProjectInfo _projectInfo;
         private static List<ModuleInfo> _findedModules = new List<ModuleInfo>();
 
         private static List<string> _filesPaths = new List<string>();
+        private static List<string> _systemFileNames = new List<string>();
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields
+        // ---------------------------------------------------------------------------------------------------------
+
         private VisualElement _mainPage;
         private DropdownField _moduleSelector;
 
-        private static List<string> systemFileNames = new List<string>();
+        #endregion
+
+        #region App lifecycle
 
         [MenuItem("Assets/ZFramework/Add Files To Module")]
         private static void FindAllSelectedFiles()
         {
-            if (systemFileNames.Count == 0)
+            if (_systemFileNames.Count == 0)
             {
-                systemFileNames.Add("desktop.ini");
-                systemFileNames.Add(".meta");
-                systemFileNames.Add(".DS_Store");
-                systemFileNames.Add(".Spotlight");
-                systemFileNames.Add(".Trashes");
-                systemFileNames.Add("ehthumbs.db");
-                systemFileNames.Add("Thumbs.db");
+                _systemFileNames.Add("desktop.ini");
+                _systemFileNames.Add(".meta");
+                _systemFileNames.Add(".DS_Store");
+                _systemFileNames.Add(".Spotlight");
+                _systemFileNames.Add(".Trashes");
+                _systemFileNames.Add("ehthumbs.db");
+                _systemFileNames.Add("Thumbs.db");
             }
 
             _filesPaths.Clear();
@@ -55,13 +70,70 @@ namespace ZFramework.Editor
                 }
             }
 
-            RightClickAddFilesToModule window = (RightClickAddFilesToModule)EditorWindow.GetWindow(typeof(RightClickAddFilesToModule), false, "Add files to module");
+            RightClickAddFilesToModule window = (RightClickAddFilesToModule)EditorWindow.GetWindow(typeof(RightClickAddFilesToModule), false, Constants.L_AddFilesToModulePageTitle);
             window.Show();
         }
 
-        static void FindAllFilesRecursively(DirectoryInfo root)
-        {
+        #endregion
 
+        #region Unity lifecycle & UI
+
+        private void CreateGUI()
+        {
+            if (_findedModules.Count == 0)
+            {
+                if (_projectInfo == null)
+                {
+                    LoadProjectManifest();
+                }
+
+                DirectoryInfo root = new DirectoryInfo(Path.Combine(Application.dataPath, Constants.RootPath));
+                FindAllModules(root);
+            }
+
+            var visualTreeMainPage = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Path.Combine(Constants.PathToLayoutForAddFilesToModulePage));
+            _mainPage = visualTreeMainPage.Instantiate();
+            _mainPage.StretchToParentSize();
+
+            _moduleSelector = _mainPage.Q<DropdownField>("selected_module");
+            _moduleSelector.choices = _findedModules.Select(v => v.name).ToList();
+
+            _mainPage.Q<Button>("btn_add_files").clickable.clicked += AddFilesToModule;
+
+            rootVisualElement.Add(_mainPage);
+            PopulateListView();
+        }
+
+
+        private void PopulateListView()
+        {
+            Func<VisualElement> makeItem = () => new Label();
+
+            Action<VisualElement, int> bindItem = (e, i) =>
+            {
+                var label = (Label)e;
+                label.text = _filesPaths[i];
+            };
+            
+            var listView = rootVisualElement.Q<ListView>();
+            listView.makeItem = makeItem;
+            listView.bindItem = bindItem;
+
+            listView.itemsSource = _filesPaths;
+            listView.selectionType = SelectionType.Single;
+
+        }
+
+        #endregion
+
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private Methods (static)
+        // ---------------------------------------------------------------------------------------------------------
+
+        private static void FindAllFilesRecursively(DirectoryInfo root)
+        {
             var subDirs = root.GetDirectories();
 
             foreach (DirectoryInfo dirInfo in subDirs)
@@ -73,8 +145,8 @@ namespace ZFramework.Editor
 
             foreach (FileInfo file in files)
             {
-                var filename = file.FullName.Split("Assets");
-                var path = "Assets" + filename[1];
+                var filename = file.FullName.Split(Constants.Assets);
+                var path = Constants.Assets + filename[1];
 
                 if (!ContainsSystemFileName(path))
                 {
@@ -83,11 +155,12 @@ namespace ZFramework.Editor
             }
         }
 
+
         private static bool ContainsSystemFileName(string path)
         {
-            for (int i = 0; i < systemFileNames.Count; i++)
+            for (int i = 0; i < _systemFileNames.Count; i++)
             {
-                if(path.Contains(systemFileNames[i]))
+                if(path.Contains(_systemFileNames[i]))
                 {
                     return true;
                 }
@@ -96,9 +169,10 @@ namespace ZFramework.Editor
             return false;
         }
 
+
         private static void LoadProjectManifest()
         {
-            var path = Path.Combine(Application.dataPath, "App/ZProjectManifest.json");
+            var path = Path.Combine(Application.dataPath, Constants.PathToProjectManifest);
 
             if (File.Exists(path))
             {
@@ -107,6 +181,7 @@ namespace ZFramework.Editor
             }
         }
 
+
         private static void FindAllModules(DirectoryInfo root)
         {
             FileInfo[] files = null;
@@ -114,7 +189,7 @@ namespace ZFramework.Editor
 
             try
             {
-                files = root.GetFiles("module-info.json");
+                files = root.GetFiles(Constants.ModuleInfoFileName);
             }
             catch (UnauthorizedAccessException e)
             {
@@ -154,11 +229,15 @@ namespace ZFramework.Editor
             });
         }
 
+        // ---------------------------------------------------------------------------------------------------------
+        // Private Methods
+        // ---------------------------------------------------------------------------------------------------------
+
         private void AddFilesToModule()
         {
             if (_moduleSelector.value == string.Empty)
             {
-                Debug.LogError("Select module");
+                Debug.LogError(Constants.L_SelectModule);
                 return;
             }
 
@@ -187,58 +266,10 @@ namespace ZFramework.Editor
                 selectedModule.content_files = new List<string>(_filesPaths);
             }
             
-            File.WriteAllText(Path.Combine(Application.dataPath, selectedModule.GetModulePath(), "module-info.json"), JsonUtility.ToJson(selectedModule));
-            Debug.Log("Successfull add files!");
+            File.WriteAllText(Path.Combine(Application.dataPath, selectedModule.GetModulePath(), Constants.ModuleInfoFileName), JsonUtility.ToJson(selectedModule));
+            Debug.Log(Constants.L_SuccessAddFiles);
         }
 
-        private void CreateGUI()
-        {
-            if (_findedModules.Count == 0)
-            {
-                if (_projectInfo == null)
-                {
-                    LoadProjectManifest();
-                }
-
-                DirectoryInfo root = new DirectoryInfo(Path.Combine(Application.dataPath, "App/"));
-                FindAllModules(root);
-            }
-
-            var visualTreeMainPage = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Path.Combine("Assets/App/Modules/System/Core/ModulesSystem/view/add_files_to_module.uxml"));
-            _mainPage = visualTreeMainPage.Instantiate();
-            _mainPage.StretchToParentSize();
-
-            _moduleSelector = _mainPage.Q<DropdownField>("selected_module");
-            _moduleSelector.choices = _findedModules.Select(v => v.name).ToList();
-
-            _mainPage.Q<Button>("btn_add_files").clickable.clicked += AddFilesToModule;
-
-            rootVisualElement.Add(_mainPage);
-            PopulateListView();
-        }
-
-        private void PopulateListView()
-        {
-            Func<VisualElement> makeItem = () => new Label();
-
-            Action<VisualElement, int> bindItem = (e, i) =>
-            {
-                var label = (Label)e;
-                label.text = _filesPaths[i];
-            };
-            // ListView listView = rootVisualElement.Q<ListView>(className: "the-uxml-listview");
-            var listView = rootVisualElement.Q<ListView>();
-            listView.makeItem = makeItem;
-            listView.bindItem = bindItem;
-
-            listView.itemsSource = _filesPaths;
-            listView.selectionType = SelectionType.Single;
-
-            // Callback invoked when the user double clicks an item
-            //listView.onItemsChosen += OnSelectionChanged;
-            // Callback invoked when the user changes the selection inside the ListView
-            //listView.onSelectionChange += OnSelectionChanged;
-
-        }
+        #endregion
     }
 }

@@ -6,23 +6,49 @@ namespace ZFramework
 {
 	public partial class Promise
 	{
-		private static Func<object, object> Wrap1(Action action) { if (action == null) return null; return x => { action(); return null; }; }
+        #region Events & Actions
+
+        private static Func<object, object> Wrap1(Action action) { if (action == null) return null; return x => { action(); return null; }; }
 		private static Func<object, object> Wrap2<I>(Action<I> action) { if (action == null) return null; return x => { action((I)x); return null; }; }
 		private static Func<object, object> Wrap3<O>(Func<O> func) { if (func == null) return null; return x => func(); }
 		private static Func<object, object> Wrap4<I, O>(Func<I, O> func) { if (func == null) return null; return x => (object)func((I)x); }
+
+		private Func<object, object> onFulfilled;
+		private Func<object, object> onRejected;
+
+		#endregion
+
+		#region Constants
 
 		private const string PENDING = "PENDING";
 		private const string FULFILLED = "FULFILLED";
 		private const string REJECTED = "REJECTED";
 
-		protected object value = null;
+        #endregion
+
+        #region Fields
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Protected fields
+        // ---------------------------------------------------------------------------------------------------------
+
+        protected object value = null;
 		private string state = PENDING;
-		private Queue<Promise> reacts = new Queue<Promise>();
 
-		private Func<object, object> onFulfilled;
-		private Func<object, object> onRejected;
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields
+        // ---------------------------------------------------------------------------------------------------------
+        private Queue<Promise> reacts = new Queue<Promise>();
 
-		public Promise Then(Action f, Action<Exception> r = null) { return Th(Wrap1(f), Wrap2(r)); }
+        #endregion
+
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods
+        // ---------------------------------------------------------------------------------------------------------
+
+        public Promise Then(Action f, Action<Exception> r = null) { return Th(Wrap1(f), Wrap2(r)); }
 		public Promise Then<I>(Action<I> f, Action<Exception> r = null) { return Th(Wrap2(f), Wrap2(r)); }
 		public Promise Then<O>(Func<O> f, Func<Exception, O> r = null) { return Th(Wrap3(f), Wrap4(r)); }
 		public Promise Then<I, O>(Func<I, O> f, Func<Exception, O> r = null) { return Th(Wrap4(f), Wrap4(r)); }
@@ -30,7 +56,16 @@ namespace ZFramework
 		public Promise Catch(Action<Exception> r = null) { return Th(null, Wrap2(r)); }
 		public Promise Catch<O>(Func<Exception, O> r = null) { return Th(null, Wrap4(r)); }
 
-		private Promise Th(Func<object, object> f, Func<object, object> r)
+        public void Fulfill() { Fulfill(null); }
+        public void Fulfill(object value) { resolveProcedure(value, FULFILLED); }
+
+        public void Reject(Exception value) { resolveProcedure(value ?? new Exception("default exception"), REJECTED); }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private Methods
+        // ---------------------------------------------------------------------------------------------------------
+
+        private Promise Th(Func<object, object> f, Func<object, object> r)
 		{
 			var promise = new Promise
 			{
@@ -43,11 +78,7 @@ namespace ZFramework
 
 			return promise;
 		}
-
-		public void Fulfill() { Fulfill(null); }
-		public void Fulfill(object value) { resolveProcedure(value, FULFILLED); }
-
-		public void Reject(Exception value) { resolveProcedure(value ?? new Exception("default exception"), REJECTED); }
+		
 
 		private void resolveProcedure(object value, string state)
 		{
@@ -61,6 +92,7 @@ namespace ZFramework
 				resolve(value, state);
 		}
 
+
 		private void resolve(object value, string state)
 		{
 			if (this.state == PENDING)
@@ -72,6 +104,7 @@ namespace ZFramework
 					reacts.Dequeue().reaction(value, state);
 			}
 		}
+
 
 		private void reaction(object value, string state)
 		{
@@ -85,9 +118,11 @@ namespace ZFramework
 				Reject(e);
 			}
 		}
-	}
 
-	public partial class Promise : CustomYieldInstruction
+        #endregion
+    }
+
+    public partial class Promise : CustomYieldInstruction
 	{
 		public override bool keepWaiting
 		{
@@ -107,12 +142,14 @@ namespace ZFramework
 			return promise;
 		}
 
+
 		public static Promise Rejected(Exception value = null)
 		{
 			var promise = new Promise();
 			promise.Reject(value);
 			return promise;
 		}
+
 
 		public static Promise All(params Promise[] args)
 		{
@@ -135,7 +172,7 @@ namespace ZFramework
 	}
 
 	//
-	// Немножко эксперемтов - не используйте этот класс
+	// A little bit of experimentation - don't use this class
 	//
 
 	public class Promise<T> : Promise

@@ -7,7 +7,6 @@ namespace ZFramework
 {
     public partial class App : MonoBehaviour
     {
-        #region Hooks Structures
         public struct Hook
         {
             private Action actions;
@@ -182,7 +181,5 @@ namespace ZFramework
                 return hook;
             }
         }
-
-#endregion
     }
 }

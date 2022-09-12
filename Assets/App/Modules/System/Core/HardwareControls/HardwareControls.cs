@@ -6,7 +6,9 @@ namespace ZFramework
 {
     public partial class App : MonoBehaviour
     {
-		void OnApplicationPause(bool state)
+        #region Unity lifecycle
+
+        void OnApplicationPause(bool state)
 		{
 			
 			if (state)
@@ -26,5 +28,7 @@ namespace ZFramework
 				App.Do(new SaveTask());
 			}
 		}
-	}
+
+        #endregion
+    }
 }

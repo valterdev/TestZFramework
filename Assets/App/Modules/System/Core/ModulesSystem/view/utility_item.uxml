@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement style="flex-direction: row; justify-content: flex-start; align-items: flex-start; margin-left: 2px; margin-right: 2px; margin-top: 2px; margin-bottom: 2px; border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; border-left-color: rgba(0, 0, 0, 255); border-right-color: rgba(0, 0, 0, 255); border-top-color: rgba(0, 0, 0, 255); border-bottom-color: rgba(0, 0, 0, 255);">
+        <ui:VisualElement>
+            <ui:Label text="Scene Util" display-tooltip-when-elided="true" name="util_name" />
+            <ui:Label display-tooltip-when-elided="true" name="util_descr" />
+        </ui:VisualElement>
+        <ui:VisualElement name="editor_label" style="background-image: url(&apos;project://database/Assets/App/Modules/System/Core/ModulesSystem/Editor/Icons/label_editor.png?fileID=2800000&amp;guid=7a9b825e95a574273824030bfd0e04f0&amp;type=3#label_editor&apos;); width: 56px; height: 15px; position: absolute; justify-content: flex-start; left: auto; right: 0; margin-top: 2px; margin-right: 2px;" />
+    </ui:VisualElement>
+</ui:UXML>

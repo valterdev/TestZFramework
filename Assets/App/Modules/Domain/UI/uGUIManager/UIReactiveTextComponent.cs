@@ -9,11 +9,28 @@ namespace ZFramework {
     [RequireComponent(typeof(TMP_Text))]
     public class UIReactiveTextComponent : MonoBehaviour
     {
+        // Constants
+        private const string exceptionMsg = "Need add multilanguages features";
+
+        #region Fields
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public fields
+        // ---------------------------------------------------------------------------------------------------------
+
         public string m_Key;
         public string m_Format;
         public string m_Locale;
 
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields
+        // ---------------------------------------------------------------------------------------------------------
+
         private TMP_Text _label;
+
+        #endregion
+
+        #region Unity lifecycle
 
         private void Awake()
         {
@@ -23,11 +40,20 @@ namespace ZFramework {
             }
         }
 
+
         private void Start()
         {
             App.GStore?.RegisterReactiveComponent(m_Key, UpdateReactive);
             UpdateReactive();
         }
+
+        #endregion
+
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private Methods
+        // ---------------------------------------------------------------------------------------------------------
 
         private void UpdateReactive()
         {
@@ -42,9 +68,10 @@ namespace ZFramework {
                 }
             } else
             {
-                throw new NotImplementedException("Need add multilanguages features");
+                throw new NotImplementedException(exceptionMsg);
             }
-            
         }
+
+        #endregion
     }
 }

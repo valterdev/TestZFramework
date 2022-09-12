@@ -7,11 +7,17 @@ namespace ZFramework
 {
     public class InitTask : AppTask
     {
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods (override)
+        // ---------------------------------------------------------------------------------------------------------
+
         public override IEnumerator Run()
         {
             yield return Promise.Resolved()
-                // После того, как зарегистрированы все модули, возможно часть из этих модулей захочет переконфигурировать другие
-                // В этом случае, они подключаются к данному хуку и меняют параметры до вызова основного Init Task
+                // After all modules are registered, some of these modules may want to reconfigure others.
+                // In this case, they connect to this hook and change the parameters before calling the main Init Task
                 .Then(App.OnLoadData.Invoke)
                 .Then(App.OnBeforeStart.Invoke)
 
@@ -20,5 +26,7 @@ namespace ZFramework
 
                 .Then(App.Instance.MainLoop.NextInit);
         }
+
+        #endregion
     }
 }

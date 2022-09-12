@@ -1,5 +1,11 @@
 public static class Encode
 {
+    #region Methods
+
+    // ---------------------------------------------------------------------------------------------------------
+    // Public Methods (static)
+    // ---------------------------------------------------------------------------------------------------------
+
     public static string MD52(string value)
     {
         byte[] textBytes = System.Text.Encoding.UTF8.GetBytes(value);
@@ -23,4 +29,6 @@ public static class Encode
             throw;
         }
     }
+
+    #endregion
 }

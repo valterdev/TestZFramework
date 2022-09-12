@@ -7,11 +7,17 @@ using System;
 namespace ZFramework
 {
     /// <summary>
-    /// Вспомогательный класс который конвертит System.Reflection.MethodInfo в Action
-    /// Необходим для мапинга стора с предварительной обработкой параметров.
+    /// Helper class that converts System.Reflection.MethodInfo to Action.
+    /// Required for mapping a store with pre-processing of parameters.
     /// </summary>
     public class GSSActionBuilder
     {
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods (static)
+        // ---------------------------------------------------------------------------------------------------------
+
         public static T BuildAction<T>(MethodInfo method, params object[] missingParamValues)
         {
             var queueMissingParams = new Queue<object>(missingParamValues);
@@ -53,6 +59,10 @@ namespace ZFramework
             }
         }
 
+        // ---------------------------------------------------------------------------------------------------------
+        // Private Methods (static)
+        // ---------------------------------------------------------------------------------------------------------
+
         private static Expression CreateParam(ParameterExpression[] paramsOfDelegate, int i, ParameterInfo callParamType, Queue<object> queueMissingParams)
         {
             if (i < paramsOfDelegate.Length)
@@ -66,5 +76,7 @@ namespace ZFramework
 
             return Expression.Constant(null);
         }
+
+        #endregion
     }
 }

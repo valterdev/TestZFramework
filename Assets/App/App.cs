@@ -9,17 +9,38 @@ namespace ZFramework
     public partial class App : MonoBehaviour
     {
         #region System API
-        private static void CleanUpMemory()
-        {
-            GC.Collect();
-            Resources.UnloadUnusedAssets();
-        }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // public properties (static)
+        // ---------------------------------------------------------------------------------------------------------
+
+        public static App Instance { get; private set; }
+
+        public static long Timestamp => DateTimeOffset.UtcNow.ToUnixTimeSeconds() + App.GStore.Get<int>("TimestampOffset");
+        public static long TimestampZoneOffset => (long)TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalSeconds;
+
+        // ---------------------------------------------------------------------------------------------------------
+        // public properties 
+        // ---------------------------------------------------------------------------------------------------------
+
+        public MainLoop MainLoop { get; private set; }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Methods
+        // ---------------------------------------------------------------------------------------------------------
 
         public static Promise Do(AppTask task)
         {
             App.Instance.StartCoroutine(DoCoroutine(task));
             return task.Promise;
         }
+
+
+        public static T Do<T>() where T : ITask
+        {
+            return (T)Activator.CreateInstance(typeof(T));
+        }
+
 
         private static IEnumerator DoCoroutine(AppTask task)
         {
@@ -30,18 +51,16 @@ namespace ZFramework
             task.Promise.Fulfill();
         }
 
-        public static T Do<T>() where T : ITask
+
+        private static void CleanUpMemory()
         {
-            return (T)Activator.CreateInstance(typeof(T));
+            GC.Collect();
+            Resources.UnloadUnusedAssets();
         }
 
-        public static long Timestamp => DateTimeOffset.UtcNow.ToUnixTimeSeconds() + App.GStore.Get<int>("TimestampOffset");
-        public static long TimestampZoneOffset => (long)TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalSeconds;
-
-        public static App Instance { get; private set; }
         #endregion
 
-        public MainLoop MainLoop { get; private set; }
+        #region Object lifecycle
 
         private App()
         {
@@ -49,18 +68,24 @@ namespace ZFramework
             MainLoop = new MainLoop();
         }
 
+
         private void OnDestroy()
         {
             Instance = null;
         }
 
-        public void Awake()
+        #endregion
+
+        #region Unity lifecycle
+
+        private void Awake()
         {
             DontDestroyOnLoad(this);
             Do(new PreInitTask()).Catch(OnErrorPre);
         }
 
-        public IEnumerator Start()
+
+        private IEnumerator Start()
         {
             while (MainLoop.CurState < MainLoop.State.Init)
             {
@@ -68,9 +93,9 @@ namespace ZFramework
             }
 
             Do(new InitTask()).Catch(OnError);
-
-            StartCoroutine(ttt());
         }
+
+        #endregion
 
         private void OnErrorPre(Exception e)
         {
@@ -80,25 +105,6 @@ namespace ZFramework
         private void OnError(Exception e)
         {
             LogException(typeof(InitTask), e);
-
-            //if (e is FirstRunManifestException)
-            //{
-            //    App.UI.Get<ErrorPopup>().Open(ErrorPopupType.FirstRunManifest, ErrorPopupButton.Support, ErrorPopupSource.Preloader);
-            //} else
-            //{
-            //    App.UI.Get<ErrorPopup>().Open(ErrorPopupType.Unknown, ErrorPopupButton.Support, ErrorPopupSource.Preloader);
-            //}
-        }
-
-        IEnumerator ttt()
-        {
-            yield return new WaitForSeconds(2f);
-
-            App.GStore.Set<int>("User/Testtt", 1);
-
-            yield return new WaitForSeconds(2f);
-
-            App.GStore.Set<int>("User/Testtt", -3);
         }
     }
 

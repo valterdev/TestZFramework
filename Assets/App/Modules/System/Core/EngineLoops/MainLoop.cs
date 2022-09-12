@@ -4,9 +4,6 @@ using UnityEngine;
 
 namespace ZFramework
 {
-    /// <summary>
-    /// Данный класс планировался для управления всеми циклами в движке, но не был сделан из-за отсутствия времени. Его функционал только отвечает за переключение PreInit и Init функций менеджеров.
-    /// </summary>
     public class MainLoop
     {
         public enum State
@@ -17,29 +14,33 @@ namespace ZFramework
             Main = 30
         }
 
+        #region Fields
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public properties
+        // ---------------------------------------------------------------------------------------------------------
+
         public State CurState { get; private set; }
+
+        #endregion
 
         public MainLoop()
         {
             CurState = State.PreInit;
         }
 
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods
+        // ---------------------------------------------------------------------------------------------------------
+
         public void NextInit()
         {
-            if (CurState < State.Main) CurState += 10;
+            if (CurState < State.Main)
+                CurState += 10;
         }
-        //public static FixedLoop FixedLoop { get { return Instance.GetComponent<FixedLoop>(); } }
 
-        //public void BeforeInit() {
-
-        //}
-
-        //public void Init() {
-
-        //}
-
-        //public void AfterInit() {
-
-        //}
+        #endregion
     }
 }

@@ -7,13 +7,17 @@ using Newtonsoft.Json;
 
 namespace ZFramework
 {
-    //[JsonObject(MemberSerialization.OptIn)]
     /// <summary>
-    /// Глобальный стор состояний, призванный уменьшить связность объектов
+    /// Global state store designed to reduce the connectivity of objects.
     /// </summary>
     public class GStore : SingletonCrossScene<GStore>
     {
-        //[JsonProperty]
+        #region Fields
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields
+        // ---------------------------------------------------------------------------------------------------------
+
         private Dictionary<TypeCode, IGlobalStore> _globalStores = new Dictionary<TypeCode, IGlobalStore>();
 
         private List<GStoreClassContainerRef> _allContainerRefs = new List<GStoreClassContainerRef>();
@@ -27,8 +31,12 @@ namespace ZFramework
         private Dictionary<string, Action<object>> _postGet = new Dictionary<string, Action<object>>();
         private Dictionary<string, object> _postGetObjects = new Dictionary<string, object>();
 
+        #endregion
+
+        #region App lifecycle
+
         /// <summary>
-        /// Функция предварительной инициализации
+        /// Pre-initialization function
         /// </summary>
         public void PreInit()
         {
@@ -36,22 +44,30 @@ namespace ZFramework
             InitStores();
         }
 
+
         public void Init()
         {
             
         }
 
         /// <summary>
-        /// Регистрирует (создает и инициализирует) глобальную статик переменную, чтобы у нас был доступ к стору из любого участка кода.
-        /// Реализуется паттерн синглтона (потокобезопасный).
+        /// Registers (creates and initializes) a global static variable so that we can access the manager from any part of the code.
+        /// The singleton pattern (thread-safe) is implemented.
         /// </summary>
         public void RegisterStaticObject()
         {
             App.GStore = GStore.Instance();
         }
 
+        #endregion
+
+        #region Methods
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods
+        // ---------------------------------------------------------------------------------------------------------
+
         /// <summary>
-        /// Собирает информацию и создает сторы со всеми переменными из partial GSHelp
+        /// Collects information and creates stores with all variables from partial GSHelp
         /// </summary>
         public void InitStores()
         {
@@ -66,34 +82,22 @@ namespace ZFramework
                 }
             }
             // models
-            // Собираем информацию о всех моделях данных и сохраняем ее
+            // We collect information about all data models and save it
             var nestedTypes = type.GetNestedTypes();
 
             for (int i = 0; i < nestedTypes.Length; i++)
             {
-                // собираем информацию о встроенных методах
+                // collecting information about built-in methods
                 ConstructorInfo constructor = nestedTypes[i].GetConstructor(Type.EmptyTypes);
                 object classObject = constructor.Invoke(new object[] { });
 
                 var nestedMethods = nestedTypes[i].GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
 
-                //foreach (MethodInfo method in nestedMethods)
-                //{
-                    
-                    //if (method.Name.Contains("get_"))
-                    //{
-
-
-                    //    Debug.Log(method.Invoke(classObject, null));
-                    //    Debug.Log(method.Name);
-                    //}
-                //}
-
                 if (nestedTypes[i].GetCustomAttribute<GSStoreIgnoreAttribute>() == null)
                 {
                     GStoreClassContainerRef containerRef = new GStoreClassContainerRef(this, nestedTypes[i].Name);
 
-                    //Собираем поля встроенного класса
+                    // Collecting the fields of the nested class
                     var nestedFields = nestedTypes[i].GetFields();
 
                     foreach (FieldInfo field in nestedFields)
@@ -145,12 +149,13 @@ namespace ZFramework
             }
         }
 
+
         /// <summary>
-        /// Получаем данные из стора по ключу
+        /// Getting data from the store by key
         /// </summary>
-        /// <param name="key">Ключ типа string</param>
-        /// <returns>Возвращает полиморфный объект типа object.
-        /// При этом если данного значения в хранилище нет, то вернет дефолтное значение для заданного типа T</returns>
+        /// <param name="key">Key of type string</param>
+        /// <returns>Returns a polymorphic object of type object.
+        /// Moreover, if this value is not in the storage, it will return the default value for the given type T</returns>
         public T Get<T>(string key)
         {
             TypeCode typeCode = Type.GetTypeCode(typeof(T));
@@ -165,15 +170,16 @@ namespace ZFramework
                 return (T)_globalStores[typeCode].Get<T>(key);
             } else
             {
-                // если хранилище для заданного типа отсутствует, то создаем его
+                // if there is no storage for the given type, then we create it
                 CreateNewStoreWithSpecialType(typeCode);
 
                 return (T)_globalStores[typeCode].Get<T>(key);
             }
         }
 
+
         /// <summary>
-        /// Получаем данные из стора по ключу (используется для внутренних целей, если вам нужно получить переменную из стора воспользуйтесь дженерик версией Get<T>)
+        /// We get data from the store by key (used for internal purposes, if you need to get a variable from the store, use the generic version of Get<T>)
         /// </summary>
         /// <param name="typeCode"></param>
         /// <param name="key"></param>
@@ -183,8 +189,9 @@ namespace ZFramework
             return _globalStores[typeCode].Get(key);
         }
 
+
         /// <summary>
-        /// Меняет переменную в хранилище с заданным ключом и типом Т, если такой переменной нет, то добавляет ее в хранилище.
+        /// Changes the variable in the storage with the given key and type T, if there is no such variable, then adds it to the storage.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
@@ -193,6 +200,7 @@ namespace ZFramework
         {
             Set<T>(key, value, true);
         }
+
 
         public void Set<T>(string key, T value, bool withPost)
         {
@@ -208,7 +216,7 @@ namespace ZFramework
 
             if (!_globalStores.ContainsKey(typeCode))
             {
-                // если хранилище для заданного типа отсутствует, то создаем его
+                // if there is no storage for the given type, then we create it
                 CreateNewStoreWithSpecialType(typeCode);
             }
 
@@ -225,14 +233,15 @@ namespace ZFramework
             CheckObserverAndUpdateIfNeeded(key);
         }
 
+
         public string GetJsonAllData()
         {
             var settings = new JsonSerializerSettings();
-            //settings.TypeNameHandling = TypeNameHandling.All;
 
             string json = JsonConvert.SerializeObject(_globalStores, Formatting.Indented, settings);
-            return json;//JsonUtility.ToJson(_globalStores);
+            return json;
         }
+
 
         public void ProcessLoadedData()
         {
@@ -241,6 +250,7 @@ namespace ZFramework
                 store.Value.ProcessData(store.Key);
             }
         }
+
 
         public void ImportFromJson(string json)
         {
@@ -251,6 +261,7 @@ namespace ZFramework
             _globalStores = JsonConvert.DeserializeObject<Dictionary<TypeCode, IGlobalStore>>(json, settings);
             //JsonConvert.PopulateObject(json, _globalStores);
         }
+
 
         public class GlobalStoreConverter : JsonConverter
         {
@@ -270,6 +281,27 @@ namespace ZFramework
             }
         }
 
+
+        /// <summary>
+        /// Registers objects that will be reactive (changes to this variable will be tracked)
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="action"></param>
+        public void RegisterReactiveComponent(string key, Action action)
+        {
+            if (_observers.ContainsKey(key))
+            {
+                _observers[key] += action;
+            } else
+            {
+                _observers.Add(key, action);
+            }
+        }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private Methods
+        // ---------------------------------------------------------------------------------------------------------
+
         private void CheckObserverAndUpdateIfNeeded(string key)
         {
             if (_observers.ContainsKey(key))
@@ -288,27 +320,12 @@ namespace ZFramework
             }
         }
 
-        /// <summary>
-        /// Регистрирует объекты, которые будут обладать реактивностью (будут отслеживаться изменения данной переменной)
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="action"></param>
-        public void RegisterReactiveComponent(string key, Action action)
-        {
-            if (_observers.ContainsKey(key))
-            {
-                _observers[key] += action;
-            } else
-            {
-                _observers.Add(key, action);
-            }
-        }
 
         /// <summary>
-        /// Регистрирует и связывает с переменными функцию (используя атрибут [GSSRegPreHelper("")])
+        /// Registers and associates a function with variables (using attribute [GSSRegPreHelper("")])
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="action"></param>
+        /// <param name="key">Variable key</param>
+        /// <param name="action">Function</param>
         /// <param name="classObject"></param>
         private void RegisterPreGet(string key, Action<object> action, object classObject)
         {
@@ -319,11 +336,12 @@ namespace ZFramework
             }
         }
 
+
         /// <summary>
-        /// Регистрирует и связывает с переменными функцию (используя атрибут [GSSRegPostHelper("")])
+        /// Registers and associates a function with variables (using attribute [GSSRegPostHelper("")])
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="action"></param>
+        /// <param name="key">Variable key</param>
+        /// <param name="action">Function</param>
         /// <param name="classObject"></param>
         private void RegisterPostGet(string key, Action<object> action, object classObject)
         {
@@ -334,13 +352,16 @@ namespace ZFramework
             }
         }
 
+
         /// <summary>
-        /// Функция создает новое хранилище данных, с заданным типом
+        /// The function creates a new data store, with the given type
         /// </summary>
-        /// <param name="type">Тип переменной которая нам нужна, указывается через typeof(тип переменной, например bool)</param>
+        /// <param name="type">The type of the variable that we need is indicated through typeof (variable type, for example bool)</param>
         private void CreateNewStoreWithSpecialType(TypeCode type)
         {
             _globalStores.Add(type, new GlobalStore());
         }
+
+        #endregion
     }
 }

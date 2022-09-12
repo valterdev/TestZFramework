@@ -4,11 +4,12 @@ using UnityEditor;
 using System.IO;
 using UnityEngine.UIElements;
 using System.Linq;
+using Constants = EditorConstantsForModuleSystem;
 
 namespace ZFramework.Editor
 {
     /// <summary>
-    /// Окно позволяющее создавать и задавать мета данные для новых модулей ZFramework (Расширение для редактора Unity)
+    /// A window that allows you to create and set meta data for new ZFramework modules (Extension for the Unity editor)
     /// </summary>
     public class CreateModuleWindow : EditorWindow
     {
@@ -28,16 +29,29 @@ namespace ZFramework.Editor
             System_Data,
             System_Network,
             System_Other,
+            System_Tools,
 
             Domain_Mechanics_Features = 10,
             Domain_Meta,
             Domain_UI,
-            Domain_Other
+            Domain_Other,
+            Domain_Tools
         }
+
+        #region Fields
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields (static)
+        // ---------------------------------------------------------------------------------------------------------
+
+        private static ModuleInfo _moduleInfo;
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields
+        // ---------------------------------------------------------------------------------------------------------
 
         private MTypeName _moduleTypes;
         private MStateName _moduleStates;
-        private static ModuleInfo _moduleInfo;
         private VisualElement _createModulePage;
 
         private TextField _moduleName;
@@ -52,26 +66,11 @@ namespace ZFramework.Editor
         private TextField _moduleDescr;
         private TextField _moduleScriptMname;
 
-        private Dictionary<string, Toggle> _settingBoolToggles = new Dictionary<string, Toggle>();
+        private Dictionary<string, Toggle> _settingBoolToggles = new();
 
-        [MenuItem("Window/ZFramework/Module Editor/Create Module")]
-        static void Init()
-        {
-            if (_moduleInfo == null)
-            {
-                InitCollections();
-            }
+        #endregion
 
-            CreateModuleWindow window = (CreateModuleWindow)EditorWindow.GetWindow(typeof(CreateModuleWindow), false, "Create module");
-            window.Show();
-        }
-
-        static void InitCollections()
-        {
-            _moduleInfo = new ModuleInfo();
-            _moduleInfo.description = "Description";
-            _moduleInfo.preinit = true;
-        }
+        #region Unity lifecycle & UI
 
         private void CreateGUI()
         {
@@ -80,7 +79,7 @@ namespace ZFramework.Editor
                 InitCollections();
             }
 
-            var visualTreeMainPage = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Path.Combine("Assets/App/Modules/System/Core/ModulesSystem/view/create_module.uxml"));
+            var visualTreeMainPage = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Path.Combine(Constants.PathToLayoutForCreateModulePage));
             _createModulePage = visualTreeMainPage.Instantiate();
             _createModulePage.StretchToParentSize();
 
@@ -89,17 +88,20 @@ namespace ZFramework.Editor
             _moduleVersion = _createModulePage.Q<TextField>("module_version");
 
             _moduleType = _createModulePage.Q<DropdownField>("module_type");
-            //_moduleType.choices = System.Enum.GetValues(typeof(MTypeName)).Cast<MTypeName>().Select(v => v.ToString()).ToList();
-            _moduleType.choices = new List<string>();
-            _moduleType.choices.Add("Domain/Mechanics_Features");
-            _moduleType.choices.Add("Domain/Meta");
-            _moduleType.choices.Add("Domain/UI");
-            _moduleType.choices.Add("Domain/Other");
+            
+            _moduleType.choices = new() {
+                Constants.Domain_Mechanics_Features,
+                Constants.Domain_Meta,
+                Constants.Domain_UI,
+                Constants.Domain_Tools,
+                Constants.Domain_Other,
 
-            _moduleType.choices.Add("System/Core");
-            _moduleType.choices.Add("System/Data");
-            _moduleType.choices.Add("System/Network");
-            _moduleType.choices.Add("System/Other");
+                Constants.System_Core,
+                Constants.System_Data,
+                Constants.System_Network,
+                Constants.System_Tools,
+                Constants.System_Other
+            };
 
             _moduleState = _createModulePage.Q<DropdownField>("module_state");
             _moduleState.choices = System.Enum.GetValues(typeof(MStateName)).Cast<MStateName>().Select(v => v.ToString()).ToList();
@@ -122,19 +124,63 @@ namespace ZFramework.Editor
                 }
             });
 
-            _createModulePage.Q<Button>("btn_create_module").clickable.clicked += CreateModule;
+            _createModulePage.BindBtn("btn_create_module", CreateModule);
             
             #endregion
 
             rootVisualElement.Add(_createModulePage);
         }
 
+        #endregion
+
+        #region App lifecycle
+
+        [MenuItem("Window/ZFramework/Module Editor/Create Module")]
+        static void Init()
+        {
+            if (_moduleInfo == null)
+            {
+                InitCollections();
+            }
+
+            CreateModuleWindow window = (CreateModuleWindow)EditorWindow.GetWindow(typeof(CreateModuleWindow), false, Constants.L_CreateModuleTitle);
+            window.Show();
+        }
+
+        static void InitCollections()
+        {
+            _moduleInfo = new ModuleInfo();
+            _moduleInfo.description = Constants.Description;
+            _moduleInfo.preinit = true;
+        }
+
+        #endregion
+
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods
+        // ---------------------------------------------------------------------------------------------------------
+
+        public static string GenerateModuleHash(string moduleName)
+        {
+            int random  = Random.Range(0, int.MaxValue);
+            int random2 = Random.Range(0, int.MaxValue);
+            string key  = random + moduleName + random2;
+
+            return Encode.MD52(key);
+        }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private Methods
+        // ---------------------------------------------------------------------------------------------------------
+
         private void CreateModule()
         {
             #region Get data form UI
             if(_moduleName.value == string.Empty)
             {
-                Debug.LogError("Enter module name");
+                Debug.LogError(Constants.L_EnterModuleName);
                 return;
             }
 
@@ -142,7 +188,7 @@ namespace ZFramework.Editor
 
             if (_moduleVersion.value == string.Empty)
             {
-                Debug.LogError("Enter module version");
+                Debug.LogError(Constants.L_EnterModuleVersion);
                 return;
             }
 
@@ -150,7 +196,7 @@ namespace ZFramework.Editor
 
             if (_moduleType.value == null)
             {
-                Debug.LogError("Select module type");
+                Debug.LogError(Constants.L_SelectModuleType);
                 return;
             }
 
@@ -158,7 +204,7 @@ namespace ZFramework.Editor
 
             if (_moduleState.value == null)
             {
-                Debug.LogError("Select module state");
+                Debug.LogError(Constants.L_SelectModuleState);
                 return;
             }
 
@@ -182,18 +228,16 @@ namespace ZFramework.Editor
             #endregion
 
             string moduleFolder = _moduleType.value;
-            string filePath = "App/Modules/" + moduleFolder + "/" + _moduleInfo.name;
-
-            var managerName = _moduleInfo.custom_manager_name == string.Empty ? _moduleInfo.name + "Manager" : _moduleInfo.custom_manager_name;
-
+            string filePath = Constants.PathToAppModules + moduleFolder + "/" + _moduleInfo.name;
+            var managerName = _moduleInfo.custom_manager_name == string.Empty ? _moduleInfo.name + Constants.Manager : _moduleInfo.custom_manager_name;
 
             string[] fileNames = {
-        "module-info.json",
-        _moduleInfo.name + "Parts.cs",
-        managerName + ".cs",
-        _moduleInfo.name + "Hooks.cs",
-        _moduleInfo.name + "Store.cs",
-        };
+                Constants.ModuleInfoFileName,
+                _moduleInfo.name + "Parts.cs",
+                managerName + ".cs",
+                _moduleInfo.name + "Hooks.cs",
+                _moduleInfo.name + "Store.cs",
+                };
 
             if (!Directory.Exists(Path.Combine(Application.dataPath, filePath)))
             {
@@ -206,81 +250,58 @@ namespace ZFramework.Editor
                 if (_settingBoolToggles["singleton"].value)
                 {
                     // Parts
-                    string partTmpl = File.ReadAllText(Path.Combine(Application.dataPath, "App/Modules/System/Core/ModulesSystem/templates/Parts.cs.tmpl"));
-                    partTmpl = partTmpl.Replace("{0}", managerName);
-                    File.WriteAllText(Path.Combine(Application.dataPath, filePath, fileNames[1]), partTmpl);
+                    WriteFileBaseOnTemplate(Constants.PathToPartsScriptTemplate, filePath, fileNames[1], managerName);
 
                     // Manager
-                    string managerTmpl = File.ReadAllText(Path.Combine(Application.dataPath, "App/Modules/System/Core/ModulesSystem/templates/Manager.cs.tmpl"));
-                    managerTmpl = managerTmpl.Replace("{0}", managerName);
-                    File.WriteAllText(Path.Combine(Application.dataPath, filePath, fileNames[2]), managerTmpl);
-
+                    WriteFileBaseOnTemplate(Constants.PathToManagerScriptTemplate, filePath, fileNames[2], managerName);
                 }
 
                 if (_settingBoolToggles["hooks"].value)
                 {
                     // Hooks
-                    string hooksTmpl = File.ReadAllText(Path.Combine(Application.dataPath, "App/Modules/System/Core/ModulesSystem/templates/Hooks.cs.tmpl"));
-                    hooksTmpl = hooksTmpl.Replace("{0}", _moduleInfo.name);
-                    File.WriteAllText(Path.Combine(Application.dataPath, filePath, fileNames[3]), hooksTmpl);
+                    WriteFileBaseOnTemplate(Constants.PathToHooksScriptTemplate, filePath, fileNames[3], _moduleInfo.name);
                 }
 
                 if (_settingBoolToggles["store"].value)
                 {
                     // Store
-                    string storeTmpl = File.ReadAllText(Path.Combine(Application.dataPath, "App/Modules/System/Core/ModulesSystem/templates/Store.cs.tmpl"));
-                    storeTmpl = storeTmpl.Replace("{0}", _moduleInfo.name);
-                    File.WriteAllText(Path.Combine(Application.dataPath, filePath, fileNames[4]), storeTmpl);
+                    WriteFileBaseOnTemplate(Constants.PathToStoreScriptTemplate, filePath, fileNames[4], _moduleInfo.name);
                 }
 
-                AllModulesWindow.UpdatePreInit();
-                //AssetDatabase.Refresh();
-               
+                AllModulesWindow.UpdatePreInit(); 
             } else
             {
-                Debug.LogError("Module with this name is exist.");
+                Debug.LogError(Constants.L_ModuleWithNameExist);
             }
         }
 
-        public static string GenerateModuleHash(string moduleName)
-        {
-            int random = Random.Range(0, int.MaxValue);
-            int random2 = Random.Range(0, int.MaxValue);
-            string key = random + moduleName + random2;
 
-            return Encode.MD52(key);
+        private void WriteFileBaseOnTemplate(string tmplPath, string filePath, string fileName, string replaceString)
+        {
+            string tmpl = File.ReadAllText(Path.Combine(Application.dataPath, tmplPath));
+            tmpl = tmpl.Replace("{0}", replaceString);
+            File.WriteAllText(Path.Combine(Application.dataPath, filePath, fileName), tmpl);
         }
 
-        public int GetModuleTypeIDBySelectString(string _value)
-        {
-            switch(_value)
+
+        private int GetModuleTypeIDBySelectString(string value) =>
+            value switch
             {
-            case "System/Core":
-                return 0;
+                Constants.System_Core               => 0,
+                Constants.System_Data               => 1,
+                Constants.System_Network            => 2,
+                Constants.System_Other              => 3,
+                Constants.System_Tools              => 4,
 
-            case "System/Data":
-                return 1;
+                Constants.Domain_Mechanics_Features => 10,
+                Constants.Domain_Meta               => 11,
+                Constants.Domain_UI                 => 12,
+                Constants.Domain_Other              => 13,
+                Constants.Domain_Tools              => 14,
 
-            case "System/Network":
-                return 2;
+                _                                   => -1,
+            };
 
-            case "System/Other":
-                return 3;
-
-            case "Domain/Mechanics_Features":
-                return 10;
-
-            case "Domain/Meta":
-                return 11;
-
-            case "Domain/UI":
-                return 12;
-
-            case "Domain/Other":
-                return 13;
-
-            default: return -1;
-            }
-        }
+        #endregion
     }
 }

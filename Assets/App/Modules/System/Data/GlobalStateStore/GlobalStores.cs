@@ -1,36 +1,37 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
 
 namespace ZFramework
 {
-    public interface IGlobalStore
-    {
-        public object Get<T>(string key);
-        public object Get(string key);
-
-
-        public void ProcessData(TypeCode typeCode);
-        public void Set<T>(string key, T value);
-    }
-
     /// <summary>
-    /// Обеспечивать функционал хранилища данных
+    /// Provide data warehouse functionality
     /// </summary>
     public class GlobalStore : IGlobalStore
     {
-        //private Dictionary<string, T> _store = new Dictionary<string, T>();
+        #region Fields
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Private fields
+        // ---------------------------------------------------------------------------------------------------------
+
         [JsonProperty]
         private Dictionary<string, object> _store = new Dictionary<string, object>();
 
+        #endregion
+
+        #region Methods
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Public Methods
+        // ---------------------------------------------------------------------------------------------------------
+
         /// <summary>
-        /// Возвращает переменную из хранилища с заданым ключом, если такой в хранилище нет, то возвращает дефолтное значение для типа Т
+        /// Returns a variable from the storage with the given key, if there is no such one in the storage, then it returns the default value for type T
         /// </summary>
-        /// <typeparam name="T">Тип переменной</typeparam>
-        /// <param name="key">Имя переменной (Ее ключ)</param>
+        /// <typeparam name="T">Variable type</typeparam>
+        /// <param name="key">Variable name (It's key)</param>
         /// <returns></returns>
         public object Get<T>(string key)
         {
@@ -42,10 +43,11 @@ namespace ZFramework
             return default(T);
         }
 
+
         /// <summary>
-        /// Функция используется для внутренних целей и не возвращает дефолтных значений, если переменной с таким ключом нет (в этос лучае вернет null).
+        /// The function is used for internal purposes and does not return default values if there is no variable with such a key (it will return null in this case).
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="key">Variable name (It's key)</param>
         /// <returns></returns>
         public object Get(string key)
         {
@@ -56,6 +58,7 @@ namespace ZFramework
 
             return null;
         }
+
 
         public void ProcessData(TypeCode typeCode)
         {
@@ -104,12 +107,13 @@ namespace ZFramework
             
         }
 
+
         /// <summary>
-        /// Меняет переменную в хранилище с заданным ключом, если такой переменной нет, то добавляет ее в хранилище.
+        /// Changes the variable in the storage with the given key, if there is no such variable, then adds it to the storage.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
+        /// <typeparam name="T">Variable type</typeparam>
+        /// <param name="key">Variable name (It's key)</param>
+        /// <param name="value">Variable value</param>
         public void Set<T>(string key, T value)
         {
             if (_store.ContainsKey(key))
@@ -120,5 +124,7 @@ namespace ZFramework
                 _store.Add(key, value);
             }
         }
+
+        #endregion
     }
 }
